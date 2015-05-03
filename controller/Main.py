@@ -2,8 +2,8 @@ __author__ = 'antoine'
 """
  Main class of the program
 """
-from view import welcome
+import view.Welcome as Welcome
 
-mainView = welcome.Welcome()
+mainView = Welcome.Welcome()
 mainView.set_title('Welcome')
 mainView.run()

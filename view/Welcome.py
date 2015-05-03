@@ -7,6 +7,8 @@ from kivy.uix.widget import Widget
 
 
 class LoginWindow(Widget):
+    secret = None
+
     def show_login(self):
         Widget.size = 200
 
