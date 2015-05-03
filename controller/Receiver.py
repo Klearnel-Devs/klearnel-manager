@@ -5,5 +5,5 @@ __author__ = 'antoine'
 import socket
 
 
-class Sender(socket):
+class Receiver(socket):
     pass
