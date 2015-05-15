@@ -5,7 +5,6 @@ __author__ = 'antoine'
 import socket
 import array
 
-
 class Networker:
     """Class Networker to make interaction with Klearnel module"""
     s = None
@@ -31,11 +30,13 @@ class Networker:
         ack = self.s.recv(2).decode('UTF-8')
         if ack != self.SOCK_ACK:
             raise Exception("The operation couldn't be executed on the device, error: "+ack)
+        print(ack)
 
-    def get_multiple_data(self, buf_size=100):
-        result = array.array('c')
+    def get_multiple_data(self, buf_size=20):
+        result = []
         while True:
             new_v = self.s.recv(buf_size).decode('UTF-8')
+            self.s.send(bytes(self.SOCK_ACK, 'UTF-8'))
             if new_v == 'EOF':
                 break
             result.append(new_v)
@@ -43,7 +44,7 @@ class Networker:
 
 if __name__ == '__main__':
     net = Networker()
-    net.connect_to(socket.gethostname())
-    net.send_val("Test", 40)
+    net.connect_to("antoine-laptop")
+    net.send_val("IT WORSKKK")
     result = net.get_multiple_data()
     print(result)
