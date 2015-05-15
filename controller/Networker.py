@@ -3,10 +3,10 @@ __author__ = 'antoine'
     Class to send actions to execute to the klearnel module
 """
 import socket
+import array
 
 
-
-class Networker(socket):
+class Networker:
     """Class Networker to make interaction with Klearnel module"""
     s = None
     SOCK_ACK = "1"
@@ -20,17 +20,29 @@ class Networker(socket):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect_to(self, host, port=42225):
-        ip_addr = self.gethostbyname(host)
+        ip_addr = socket.gethostbyname(host)
         if ip_addr is None:
-            raise Exception("Unable to find %s", host)
+            raise Exception("Unable to find "+host)
 
-        if self.s.connect(ip_addr, port) is None:
-            raise Exception("Unable to connect to %s", host)
+        self.s.connect((ip_addr, port))
 
     def send_val(self, value):
-        self.s.send(value)
-        return self.s.recv(2)
+        self.s.send(bytes(value, 'UTF-8'))
+        ack = self.s.recv(2).decode('UTF-8')
+        if ack != self.SOCK_ACK:
+            raise Exception("The operation couldn't be executed on the device, error: "+ack)
 
-    def send_val(self, value, buf_size):
-        self.s.send(value)
-        return self.s.recv(buf_size)
+    def get_multiple_data(self, buf_size=100):
+        result = array.array('c')
+        while True:
+            new_v = self.s.recv(buf_size)
+            if new_v == 'EOF':
+                break
+            result.append(new_v)
+        return result
+
+if __name__ == '__main__':
+    net = Networker()
+    net.connect_to(socket.gethostname())
+    result = net.send_val("Test", 40)
+    print(result)

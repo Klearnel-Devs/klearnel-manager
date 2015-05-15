@@ -7,3 +7,5 @@ import view.Welcome as Welcome
 mainView = Welcome.Welcome()
 mainView.set_title('Welcome')
 mainView.run()
+
+
