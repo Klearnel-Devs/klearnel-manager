@@ -35,7 +35,7 @@ class Networker:
     def get_multiple_data(self, buf_size=100):
         result = array.array('c')
         while True:
-            new_v = self.s.recv(buf_size)
+            new_v = self.s.recv(buf_size).decode('UTF-8')
             if new_v == 'EOF':
                 break
             result.append(new_v)
@@ -44,5 +44,6 @@ class Networker:
 if __name__ == '__main__':
     net = Networker()
     net.connect_to(socket.gethostname())
-    result = net.send_val("Test", 40)
+    net.send_val("Test", 40)
+    result = net.get_multiple_data()
     print(result)
