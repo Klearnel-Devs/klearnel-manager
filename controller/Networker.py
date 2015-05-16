@@ -3,7 +3,6 @@ __author__ = 'antoine'
     Class to send actions to execute to the klearnel module
 """
 import socket
-import array
 
 class Networker:
     """Class Networker to make interaction with Klearnel module"""
