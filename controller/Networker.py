@@ -4,6 +4,9 @@ __author__ = 'antoine'
 """
 import socket
 
+from controller.Crypter import Crypter
+
+
 class Networker:
     """Class Networker to make interaction with Klearnel module"""
     s = None
@@ -25,11 +28,17 @@ class Networker:
         self.s.connect((ip_addr, port))
 
     def send_val(self, value):
-        self.s.send(bytes(value, 'UTF-8'))
-        ack = self.s.recv(2).decode('UTF-8')
+        if type(value) is not str:
+            self.s.send(value)
+        else:
+            self.s.send(bytes(value, 'UTF-8'))
+        ack = self.s.recv(1).decode('UTF-8')
         if ack != self.SOCK_ACK:
             raise Exception("The operation couldn't be executed on the device, error: "+ack)
         print(ack)
+
+    def get_ack(self):
+        return self.s.recv(1).decode('UTF-8')
 
     def get_multiple_data(self, buf_size=20):
         result = []
@@ -44,6 +53,14 @@ class Networker:
 if __name__ == '__main__':
     net = Networker()
     net.connect_to("antoine-laptop")
-    net.send_val("IT WORSKKK")
-    result = net.get_multiple_data()
-    print(result)
+    net.send_val("KL19267280729489")
+    if net.get_ack() != net.SOCK_ACK:
+        print("Error on token negociation")
+        exit("End of program")
+    crypt = Crypter()
+    digest = crypt.encrypt("PASSWORD")
+    net.send_val(digest)
+
+    if net.get_ack() != net.SOCK_ACK:
+        print("Error on root password negociation")
+    net.s.close()
