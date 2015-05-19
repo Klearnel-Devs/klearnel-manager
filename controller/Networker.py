@@ -24,18 +24,17 @@ class Networker:
         ip_addr = socket.gethostbyname(host)
         if ip_addr is None:
             raise Exception("Unable to find "+host)
-
         self.s.connect((ip_addr, port))
 
     def send_val(self, value):
+        print(value)
         if type(value) is not str:
             self.s.send(value)
         else:
             self.s.send(bytes(value, 'UTF-8'))
         ack = self.s.recv(1).decode('UTF-8')
         if ack != self.SOCK_ACK:
-            raise Exception("The operation couldn't be executed on the device, error: "+ack)
-        print(ack)
+            raise ConnectionError("The operation couldn't be executed on the device, error: "+ack)
 
     def get_ack(self):
         return self.s.recv(1).decode('UTF-8')
@@ -57,8 +56,7 @@ if __name__ == '__main__':
     if net.get_ack() != net.SOCK_ACK:
         print("Error on token negociation")
         exit("End of program")
-    crypt = Crypter()
-    digest = crypt.encrypt("PASSWORD")
+    digest = Crypter.encrypt("PASSWORD")
     net.send_val(digest)
 
     if net.get_ack() != net.SOCK_ACK:

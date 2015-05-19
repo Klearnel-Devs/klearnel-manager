@@ -8,7 +8,7 @@ import pickle
 
 class ClientList():
     c_list = []
-    filename = 'client.db'
+    filename = '../client.db'
 
     def add_client(self, client):
         self.c_list.append(client)
@@ -28,12 +28,15 @@ class ClientList():
         self.c_list.clear()
 
     def load_list(self):
+
         if os.path.isfile(self.filename):
+            print("Hole")
             f = open(self.filename, 'br')
-            len = pickle.load(f)
-            for i in range(0, len):
+            length = pickle.load(f)
+            for i in range(0, length):
                 obj = pickle.load(f)
                 self.c_list.append(obj)
+                print("Hello")
             f.close()
 
     def __str__(self):
@@ -47,26 +50,19 @@ class Client():
     token = None
     password = None
     name = None
-    last_ip = ''
-    last_activity = ''
 
     def __init__(self, token, name, encrypt_pwd):
         self.token = token
         self.name = name
         self.password = encrypt_pwd
 
-    def set_ip(self, ip_addr):
-        self.last_ip = ip_addr
-
-    def set_last_activity(self, last_activity):
-        self.last_activity = last_activity
-
     def __str__(self):
-        return "Client "+self.name+": TK="+self.token+" last_ip="+\
-               self.last_ip+" last_activity="+self.last_activity
+        return "Client "+self.name+": TK="+self.token
 
 if __name__ == '__main__':
-    c = Client("12345", "TestName", "pkpfpkp234")
+    from controller.Crypter import Crypter
+    password = Crypter.encrypt("PASSWORD")
+    c = Client("KL19267280729489", "antoine-laptop", password)
     cl = ClientList()
     cl.add_client(c)
     cl.save_list()
