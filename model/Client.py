@@ -30,17 +30,15 @@ class ClientList():
     def load_list(self):
 
         if os.path.isfile(self.filename):
-            print("Hole")
             f = open(self.filename, 'br')
             length = pickle.load(f)
             for i in range(0, length):
                 obj = pickle.load(f)
                 self.c_list.append(obj)
-                print("Hello")
             f.close()
 
     def __str__(self):
-        total = None
+        total = str
         for i in range(0, len(self.c_list)):
             total += self.c_list[i].__str__()+"\n"
         return total

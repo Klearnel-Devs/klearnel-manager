@@ -1,7 +1,7 @@
 __author__ = 'antoine'
 from controller.Networker import Networker
 from model.Client import ClientList
-from model.Client import Client
+from model.ScanElem import ScanElem
 KL_EXIT = -1
 QR_ADD = 1
 QR_RM = 2
@@ -16,7 +16,7 @@ SCAN_RM = 11
 SCAN_LIST = 12
 
 
-class Tasker():
+class Tasker:
     net = Networker()
 
     def send_credentials(self, client):
@@ -43,11 +43,33 @@ class TaskGlobal(Tasker):
 
 class TaskScan(Tasker):
 
-    def add_to_scan(self, client, path):
-        pass
+    def add_to_scan(self, client, new_elem):
+        self.net.connect_to(client.name)
+        self.send_credentials(client)
+        try:
+            self.net.send_val(str(SCAN_ADD)+":"+str(len(new_elem.path)))
+            self.net.send_val(new_elem.path)
+            self.net.send_val(new_elem.options)
+            self.net.send_val(str(len(new_elem.back_limit_size)))
+            self.net.send_val(new_elem.back_limit_size)
+            self.net.send_val(str(len(new_elem.del_limit_size)))
+            self.net.send_val(new_elem.del_limit_size)
+            self.net.send_val(new_elem.is_temp)
+            self.net.send_val(str(len(new_elem.max_age)))
+            self.net.send_val(new_elem.max_age)
+        except ConnectionError:
+            raise Exception("Unable to add "+new_elem.path+" to scanner on "+client.name)
+        self.net.s.close()
 
-    def rm_from_scan(self):
-        pass
+    def rm_from_scan(self, client, path):
+        self.net.connect_to(client.name)
+        self.send_credentials(client)
+        try:
+            self.net.send_val(str(SCAN_RM)+":"+str(len(path)))
+            self.net.send_val(path)
+        except ConnectionError:
+            raise Exception("Unable to remove "+path+" from scanner on "+client.name)
+        self.net.s.close()
 
     def get_scan_list(self):
         pass
@@ -100,5 +122,11 @@ class TaskQR(Tasker):
 if __name__ == "__main__":
     cl = ClientList()
     cl.load_list()
-    qr_task = TaskQR()
-    qr_task.restore_from_qr(cl.c_list[0], "toto.txt")
+    qr_task = TaskScan()
+    scan_e = ScanElem("/home/antoine/Documents")
+    scan_e.options = "1011000000"
+    scan_e.back_limit_size = "150.0"
+    scan_e.del_limit_size = "0.0"
+    scan_e.is_temp = "0"
+    scan_e.max_age = "15"
+    qr_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")

@@ -28,10 +28,12 @@ class Networker:
 
     def send_val(self, value):
         print(value)
-        if type(value) is not str:
+        if type(value) is str:
+            self.s.send(bytes(value, 'UTF-8'))
+        elif type(value) is bytes:
             self.s.send(value)
         else:
-            self.s.send(bytes(value, 'UTF-8'))
+            self.s.send(bytes(value))
         ack = self.s.recv(1).decode('UTF-8')
         if ack != self.SOCK_ACK:
             raise ConnectionError("The operation couldn't be executed on the device, error: "+ack)
