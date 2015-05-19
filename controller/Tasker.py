@@ -1,7 +1,7 @@
 __author__ = 'antoine'
 from controller.Networker import Networker
 from model.Client import ClientList
-
+from model.Client import Client
 KL_EXIT = -1
 QR_ADD = 1
 QR_RM = 2
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     cl = ClientList()
     cl.load_list()
     qr_task = TaskQR()
-    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/tata.txt")
+    qr_task.restore_from_qr(cl.c_list[0], "toto.txt")

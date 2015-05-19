@@ -64,7 +64,6 @@ if __name__ == '__main__':
     password = Crypter.encrypt("PASSWORD")
     c = Client("KL19267280729489", "antoine-laptop", password)
     cl = ClientList()
+    cl.load_list()
     cl.add_client(c)
     cl.save_list()
-    cl.load_list()
-    print(cl.c_list[0])
