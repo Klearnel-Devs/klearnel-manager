@@ -3,7 +3,7 @@ __author__ = 'antoine'
 from hashlib import sha256
 
 
-class Crypter():
+class Crypter:
     @staticmethod
     def encrypt(data_to_hash):
         h = sha256()

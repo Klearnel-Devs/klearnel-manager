@@ -6,7 +6,7 @@ import os.path
 import pickle
 
 
-class ClientList():
+class ClientList:
     c_list = []
     filename = '../client.db'
 
@@ -44,7 +44,7 @@ class ClientList():
         return total
 
 
-class Client():
+class Client:
     token = None
     password = None
     name = None
