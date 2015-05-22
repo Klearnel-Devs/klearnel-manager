@@ -129,4 +129,5 @@ if __name__ == "__main__":
     scan_e.del_limit_size = "0.0"
     scan_e.is_temp = "0"
     scan_e.max_age = "15"
+    # qr_task.add_to_scan(cl.c_list[0], scan_e)
     qr_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")

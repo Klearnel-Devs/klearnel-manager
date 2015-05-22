@@ -27,7 +27,6 @@ class Networker:
         self.s.connect((ip_addr, port))
 
     def send_val(self, value):
-        print(value)
         if type(value) is str:
             self.s.send(bytes(value, 'UTF-8'))
         elif type(value) is bytes:
