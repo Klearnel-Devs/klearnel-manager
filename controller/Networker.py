@@ -50,6 +50,13 @@ class Networker:
             result.append(new_v)
         return result
 
+    def get_data(self, buf_size):
+        result = self.s.recv(buf_size).decode('UTF-8')
+        return result.split('\x00')[0]
+
+    def send_ack(self, value):
+        self.s.send(bytes(value, 'UTF-8'))
+
 if __name__ == '__main__':
     net = Networker()
     net.connect_to("antoine-laptop")
