@@ -2,6 +2,8 @@ __author__ = 'antoine'
 from controller.Networker import Networker
 from model.Client import ClientList
 from model.ScanElem import ScanElem
+from model.QrElem import QrElem
+
 KL_EXIT = -1
 QR_ADD = 1
 QR_RM = 2
@@ -16,21 +18,19 @@ SCAN_RM = 11
 SCAN_LIST = 12
 SCAN_OPTIONS = 11
 
+
 class Tasker:
-    net = Networker()
-
-    def send_credentials(self, client):
-        self.net.send_val(client.token)
-        if self.net.get_ack() != self.net.SOCK_ACK:
+    def send_credentials(self, net, client):
+        net.send_val(client.token)
+        if net.get_ack() != net.SOCK_ACK:
             raise ConnectionRefusedError("Error on token negociation")
-        self.net.send_val(client.password)
+        net.send_val(client.password)
 
-        if self.net.get_ack() != self.net.SOCK_ACK:
+        if net.get_ack() != net.SOCK_ACK:
             raise ConnectionRefusedError("Error on root password negociation")
 
 
 class TaskGlobal(Tasker):
-
     def get_monitor_info(self):
         pass
 
@@ -42,160 +42,235 @@ class TaskGlobal(Tasker):
 
 
 class TaskScan(Tasker):
-
     def add_to_scan(self, client, new_elem):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         try:
-            self.net.send_val(str(SCAN_ADD)+":"+str(len(new_elem.path)))
-            self.net.send_val(new_elem.path)
-            self.net.send_val(new_elem.options)
-            self.net.send_val(str(len(new_elem.back_limit_size)))
-            self.net.send_val(new_elem.back_limit_size)
-            self.net.send_val(str(len(new_elem.del_limit_size)))
-            self.net.send_val(new_elem.del_limit_size)
-            self.net.send_val(new_elem.is_temp)
-            self.net.send_val(str(len(new_elem.max_age)))
-            self.net.send_val(new_elem.max_age)
+            net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
+            net.send_val(new_elem.path)
+            net.send_val(new_elem.options)
+            net.send_val(str(len(new_elem.back_limit_size)))
+            net.send_val(new_elem.back_limit_size)
+            net.send_val(str(len(new_elem.del_limit_size)))
+            net.send_val(new_elem.del_limit_size)
+            net.send_val(new_elem.is_temp)
+            net.send_val(str(len(new_elem.max_age)))
+            net.send_val(new_elem.max_age)
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to add "+new_elem.path+" to scanner on "+client.name)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to add " + new_elem.path + " to scanner on " + client.name)
+        net.s.close()
 
     def rm_from_scan(self, client, path):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         try:
-            self.net.send_val(str(SCAN_RM)+":"+str(len(path)))
-            self.net.send_val(path)
+            net.send_val(str(SCAN_RM) + ":" + str(len(path)))
+            net.send_val(path)
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to remove "+path+" from scanner on "+client.name)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to remove " + path + " from scanner on " + client.name)
+        net.s.close()
 
     def get_scan_list(self, client):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         scan_list = list()
         try:
-            self.net.send_val(str(SCAN_LIST)+":0")
+            net.send_val(str(SCAN_LIST) + ":0")
             result = None
             i = 0
             while result != "EOF":
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
                 if size == "EOF":
                     break
-                result = self.net.get_data(int(size))
+                result = net.get_data(int(size))
                 scan_elem = ScanElem(result)
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
-                result = self.net.get_data(int(size))
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
                 scan_elem.options = result
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
-                result = self.net.get_data(int(size))
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
                 scan_elem.back_limit_size = result
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
-                result = self.net.get_data(int(size))
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
                 scan_elem.del_limit_size = result
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
-                result = self.net.get_data(int(size))
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
                 scan_elem.is_temp = result
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
-                size = self.net.get_data(20)
-                self.net.send_ack(self.net.SOCK_ACK)
-                result = self.net.get_data(int(size))
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
                 scan_elem.max_age = result
-                self.net.send_ack(self.net.SOCK_ACK)
+                net.send_ack(net.SOCK_ACK)
 
                 scan_list.append(scan_elem)
                 i += 1
 
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to get list from scanner on "+client.name)
-        self.net.send_ack(self.net.SOCK_ACK)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to get list from scanner on " + client.name)
+        net.s.close()
         return scan_list
 
 
 class TaskQR(Tasker):
-
     def add_to_qr(self, client, path):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         try:
-            self.net.send_val(str(QR_ADD)+":"+str(len(path)))
-            self.net.send_val(path)
+            net.send_val(str(QR_ADD) + ":" + str(len(path)))
+            net.send_val(path)
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to add "+path+" to quarantine on "+client.name)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to add " + path + " to quarantine on " + client.name)
+        net.s.close()
 
     def rm_from_qr(self, client, filename):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         try:
-            self.net.send_val(str(QR_RM)+":"+str(len(filename)))
-            self.net.send_val(filename)
+            net.send_val(str(QR_RM) + ":" + str(len(filename)))
+            net.send_val(filename)
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to remove "+filename+" from quarantine on "+client.name)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to remove " + filename + " from quarantine on " + client.name)
+        net.s.close()
 
     def restore_from_qr(self, client, filename):
-        self.net.connect_to(client.name)
-        self.send_credentials(client)
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
         try:
-            self.net.send_val(str(QR_REST)+":"+str(len(filename)))
-            self.net.send_val(filename)
+            net.send_val(str(QR_REST) + ":" + str(len(filename)))
+            net.send_val(filename)
         except ConnectionError:
-            self.net.s.close()
-            raise Exception("Unable to restore "+filename+" from quarantine on "+client.name)
-        self.net.s.close()
+            net.s.close()
+            raise Exception("Unable to restore " + filename + " from quarantine on " + client.name)
+        net.s.close()
 
-    def get_qr_list(self):
-        pass
+    def get_qr_list(self, client):
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
+        qr_list = list()
+        try:
+            net.send_val(str(QR_LIST) + ":0")
+            result = None
+            i = 0
+            while result != "EOF":
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                if size == "EOF":
+                    break
+                result = net.get_data(int(size))
+                qr_elem = QrElem(result)
+                net.send_ack(net.SOCK_ACK)
+
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
+                qr_elem.o_path = result
+                net.send_ack(net.SOCK_ACK)
+
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
+                qr_elem.d_begin = result
+                net.send_ack(net.SOCK_ACK)
+
+                size = net.get_data(20)
+                net.send_ack(net.SOCK_ACK)
+                result = net.get_data(int(size))
+                qr_elem.d_expire = result
+                net.send_ack(net.SOCK_ACK)
+
+                qr_list.append(qr_elem)
+                i += 1
+
+        except ConnectionError:
+            net.s.close()
+            raise Exception("Unable to get list from quarantine on " + client.name)
+        net.s.close()
+
+        return qr_list
 
     def get_qr_info(self):
         pass
 
-    def rm_all_from_qr(self):
-        pass
+    def rm_all_from_qr(self, client):
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
+        try:
+            net.send_val(str(QR_RM_ALL) + ":0")
+        except ConnectionError:
+            net.s.close()
+            raise Exception("Unable to remove all elements in the quarantine on " + client.name)
+        net.s.close()
 
-    def restore_all_from_qr(self):
-        pass
+    def restore_all_from_qr(self, client):
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
+        try:
+            net.send_val(str(QR_REST_ALL) + ":0")
+        except ConnectionError:
+            net.s.close()
+            raise Exception("Unable to restore all elements from the quarantine on " + client.name)
+        net.s.close()
+
 
 if __name__ == "__main__":
     cl = ClientList()
     cl.load_list()
-    qr_task = TaskScan()
+    qr_task = TaskQR()
+    scan_task = TaskScan()
     scan_e = ScanElem("/home/antoine/Images")
     scan_e.options = "1011000000"
     scan_e.back_limit_size = "150.0"
     scan_e.del_limit_size = "0.0"
     scan_e.is_temp = "0"
     scan_e.max_age = "15"
-    # qr_task.add_to_scan(cl.c_list[0], scan_e)
-    # qr_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")
-    scanList = qr_task.get_scan_list(cl.c_list[0])
+    # scan_task.add_to_scan(cl.c_list[0], scan_e)
+    # scan_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")
+    """scanList = scan_task.get_scan_list(cl.c_list[0])
     for scan_elem in scanList:
         print("Elem "+scan_elem.path)
         print(" - Options: "+scan_elem.options)
         print(" - Back limit size: "+scan_elem.back_limit_size)
         print(" - Del limit size: "+scan_elem.del_limit_size)
         print(" - Temp folder ? "+("true" if (scan_elem.is_temp == 1) else "false"))
-        print(" - Max Age: "+scan_elem.max_age)
-
+        print(" - Max Age: "+scan_elem.max_age)"""
+    """qrList = qr_task.get_qr_list(cl.c_list[0])
+    for qrElem in qrList:
+        print("Elem "+qrElem.f_name)
+        print(" - Old path: "+qrElem.o_path)
+        print(" - Entry date: "+qrElem.d_begin)
+        print(" - Expire date: "+qrElem.d_expire)"""
+    # qr_task.restore_from_qr(cl.c_list[0], "toto.txt")
+    """qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/toto.txt")
+    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/tata.txt")
+    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/trololo.txt")"""
+    # qr_task.rm_all_from_qr(cl.c_list[0])
+    qr_task.restore_all_from_qr(cl.c_list[0])

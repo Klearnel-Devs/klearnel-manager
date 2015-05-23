@@ -51,7 +51,12 @@ class Networker:
         return result
 
     def get_data(self, buf_size):
-        result = self.s.recv(buf_size).decode('UTF-8')
+        b_result = bytes()
+        for i in range(0, buf_size):
+            char = self.s.recv(1)
+            if char not in [b'\x00', b'\xff']:
+                b_result += char
+        result = b_result.decode('UTF-8')
         return result.split('\x00')[0]
 
     def send_ack(self, value):
