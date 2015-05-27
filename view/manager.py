@@ -11,6 +11,9 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
 from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.uix.screenmanager import Screen
+from model.Client import *
+from controller import Active
+import sys
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -46,7 +49,10 @@ class ManagerApp(App):
         self.initial_screen()
 
     def initial_screen(self):
-        self.get_index('Creation')
+        if Active.user is None:
+            self.get_index('Creation')
+        else:
+            self.get_index('Login')
         self.load_screen(self.index)
 
     def go_next_screen(self):
@@ -60,7 +66,11 @@ class ManagerApp(App):
 
     def load_screen(self, index):
         if index in self.screens:
+            sm = self.root.ids.sm
+            sm.switch_to(self.screens[index], direction='left')
+            self.current_title = self.screens[index].name
             return self.screens[index]
+        print(self.screens)
         screen = Builder.load_file(self.available_screens[index].lower())
         self.screens[index] = screen
         sm = self.root.ids.sm
@@ -72,11 +82,19 @@ class ManagerApp(App):
         self.load_screen(self.index)
 
     def login(self):
-        self.get_index('Chooser')
+        if not Active.cl.c_list:
+            self.get_index('AddServ')
+        else:
+            self.get_index('Chooser')
         self.load_screen(self.index)
 
     def connect(self):
         self.get_index('Scanner')
+        self.load_screen(self.index)
+
+    def addsrv(self, server, pw, token):
+        Active.cl.add_client(Client(token, server, pw))
+        self.get_index('Chooser')
         self.load_screen(self.index)
 
     def on_pause(self):
@@ -92,6 +110,9 @@ class ManagerApp(App):
         sm.switch_to(screen, direction='right')
         self.current_title = screen.name
         self.update_sourcecode()
+
+    def quit(self):
+        sys.exit(0)
 
 if __name__ == '__main__':
     ManagerApp().run()

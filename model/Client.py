@@ -5,13 +5,13 @@ __author__ = 'antoine'
 import os.path
 import pickle
 
-
 class ClientList:
     c_list = []
     filename = '../client.db'
 
     def add_client(self, client):
         self.c_list.append(client)
+        self.save_list()
 
     def rm_client(self, idx):
         self.c_list.pop(idx)
@@ -50,9 +50,10 @@ class Client:
     name = None
 
     def __init__(self, token, name, encrypt_pwd):
+        from controller.Crypter import Crypter
         self.token = token
         self.name = name
-        self.password = encrypt_pwd
+        self.password = Crypter.encrypt(encrypt_pwd)
 
     def __str__(self):
         return "Client "+self.name+": TK="+self.token

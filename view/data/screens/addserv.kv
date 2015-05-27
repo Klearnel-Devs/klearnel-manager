@@ -5,7 +5,7 @@ ManagerScreen:
     BoxLayout:
         orientation: 'vertical'
         Image:
-            source: 'data/resources/kernel1.png'
+            source: '../view/data/resources/kernel1.png'
         AnchorLayout:
             anchor_x: 'center'
             anchor_y: 'center'
@@ -17,16 +17,9 @@ ManagerScreen:
                 Label:
                     size_hint_x: None
                     width: root.width/3
-                    text: 'Server Name'
+                    text: 'Server Name or IP'
                 TextInput:
-                    size_hint_x: None
-                    width: root.width/2
-                    multiline: False
-                Label:
-                    size_hint_x: None
-                    width: root.width/3
-                    text: 'Server IP'
-                TextInput:
+                    id: srv
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -35,6 +28,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Klearnel Password'
                 TextInput:
+                    id: pw
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -44,6 +38,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Token ID'
                 TextInput:
+                    id: tk
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -60,6 +55,6 @@ ManagerScreen:
                     width: root.width/2
                     text: 'Add Server'
                     on_press:
-                        app.register()
+                        app.addsrv(srv.text, pw.text, tk.text)
         Label:
             text: "Developed by Klearnel Devs"
