@@ -1,0 +1,24 @@
+ManagerScreen:
+    name: 'Chooser'
+    fullscreen: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: '../resources/kernel1.png'
+
+        BoxLayout:
+            orientation: 'vertical'
+            BoxLayout:
+                orientation: 'horizontal'
+                Button:
+                    text: "Connect"
+                    on_press:
+                        root.manager.transition.direction = 'left'
+                        root.manager.current = 'menu'
+                Button:
+                    text: "Add Server"
+                Button:
+                    text: "Quit"
+        Label:
+            text: "Developed by Klearnel Devs"

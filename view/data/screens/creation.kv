@@ -1,0 +1,56 @@
+ManagerScreen:
+    name: 'Creation'
+    fullscreen: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: 'data/resources/kernel1.png'
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            padding: root.width/10
+            GridLayout:
+                cols: 2
+                rows: 4
+                row_default_height: 30
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Username'
+                TextInput:
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Password'
+                TextInput:
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    password: True
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Password Verification'
+                TextInput:
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    password: True
+                Button:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Quit'
+
+                Button:
+                    size_hint_x: None
+                    width: root.width/2
+                    text: 'Create'
+                    on_press:
+                        root.manager.transition.direction = 'left'
+                        root.manager.current = 'login'
+        Label:
+            text: "Developed by Klearnel Devs"

@@ -1,0 +1,32 @@
+ManagerScreen:
+    name: 'Login'
+    fullscreen: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: '../resources/kernel1.png'
+        GridLayout:
+            cols: 2
+            Label:
+                size_hint: 0.3, 0.3
+                text: 'Username'
+            TextInput:
+                size_hint: 0.3, 0.3
+                multiline: False
+            Label:
+                size_hint: 0.3, 0.3
+                text: 'Password'
+            TextInput:
+                multiline: False
+                password: True
+            Button:
+                text: 'Login'
+                on_press:
+                    root.manager.transition.direction = 'left'
+                    root.manager.current = 'connect'
+            Button:
+                text: 'Quit'
+
+        Label:
+            text: "Developed by Klearnel Devs"
