@@ -13,6 +13,8 @@ from kivy.animation import Animation
 from kivy.uix.screenmanager import Screen
 from model.Client import *
 from controller import Active
+from kivy.uix.carousel import Carousel
+from kivy.uix.label import Label
 import sys
 
 class ManagerScreen(Screen):
