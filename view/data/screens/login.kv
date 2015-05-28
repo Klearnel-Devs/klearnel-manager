@@ -19,6 +19,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Username'
                 TextInput:
+                    id: user
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -28,6 +29,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Password'
                 TextInput:
+                    id: pwd
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -45,6 +47,6 @@ ManagerScreen:
                     width: root.width/2
                     text: 'Login'
                     on_press:
-                        app.login()
+                        app.login(user.text, pwd.text)
         Label:
             text: "Developed by Klearnel Devs"

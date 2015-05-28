@@ -46,15 +46,17 @@ class ClientList:
 
 
 class Client:
+    user = None
     token = None
     password = None
     name = None
 
-    def __init__(self, token, name, encrypt_pwd):
+    def __init__(self, user, token, name, encrypt_pwd):
         from controller.Crypter import Crypter
         self.token = token
         self.name = name
         self.password = Crypter.encrypt(encrypt_pwd)
+        self.user = Crypter.encrypt(user)
 
     def __str__(self):
         return "Client "+self.name+": TK="+self.token

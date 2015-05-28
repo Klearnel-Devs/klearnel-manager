@@ -19,6 +19,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Username'
                 TextInput:
+                    id: user
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -28,6 +29,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Password'
                 TextInput:
+                    id: pwd
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -38,6 +40,7 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Password Verification'
                 TextInput:
+                    id: pwd_verif
                     size_hint_x: None
                     width: root.width/2
                     multiline: False
@@ -55,6 +58,6 @@ ManagerScreen:
                     width: root.width/2
                     text: 'Create'
                     on_press:
-                        app.register()
+                        app.register(user.text, pwd.text, pwd_verif.text)
         Label:
             text: "Developed by Klearnel Devs"
