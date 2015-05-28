@@ -16,6 +16,11 @@ from controller import Active
 from kivy.uix.carousel import Carousel
 from kivy.uix.label import Label
 import sys
+from kivy.uix.modalview import ModalView
+from kivy.adapters.listadapter import ListAdapter
+from kivy.uix.listview import ListItemButton, ListView
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -24,6 +29,31 @@ class ManagerScreen(Screen):
         if 'content' in self.ids:
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
+
+class ListViewModal(BoxLayout):
+    data = ListProperty()
+
+    def __init__(self, **kwargs):
+        self.data = [{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
+        args_converter = lambda row_index, rec: {'text': rec['text'],
+                                             'size_hint_y': None,
+                                             'height': 25}
+        self.list_adapter = ListAdapter(data=self.data,
+                                        args_converter=args_converter,
+                                        cls=ListItemButton,
+                                        selection_mode='single',
+                                        allow_empty_selection=False)
+
+        super(ListViewModal, self).__init__(**kwargs)
+        self.add_widget(ListView(adapter=self.list_adapter))
+        Clock.schedule_interval(self.update_data, 5)
+
+    def update_data(self, dt):
+        if len(self.data) != len(Active.cl.c_list):
+            for x in range(len(self.data), len(Active.cl.c_list)):
+                self.data.append({'text': str(Active.cl.c_list[x]), 'is_selected': False})
+                self.list_adapter.update_for_new_data()
+                print("Added")
 
 
 class ManagerApp(App):
@@ -72,7 +102,6 @@ class ManagerApp(App):
             sm.switch_to(self.screens[index], direction='left')
             self.current_title = self.screens[index].name
             return self.screens[index]
-        print(self.screens)
         screen = Builder.load_file(self.available_screens[index].lower())
         self.screens[index] = screen
         sm = self.root.ids.sm
@@ -98,6 +127,8 @@ class ManagerApp(App):
         Active.cl.add_client(Client(token, server, pw))
         self.get_index('Chooser')
         self.load_screen(self.index)
+
+
 
     def on_pause(self):
         return True

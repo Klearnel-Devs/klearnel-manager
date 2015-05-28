@@ -26,6 +26,7 @@ class ClientList:
             pickle.dump(self.c_list[i], f)
         f.close()
         self.c_list.clear()
+        self.load_list()
 
     def load_list(self):
 
