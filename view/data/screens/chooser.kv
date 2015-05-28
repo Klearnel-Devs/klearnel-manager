@@ -1,6 +1,9 @@
 #:import lv kivy.uix.listview
 #:import la kivy.adapters.listadapter
 
+<ListItems@ListItemButton>
+    on_press: app.connect(self.text)
+
 ManagerScreen:
     name: 'Chooser'
     fullscreen: True

@@ -21,6 +21,9 @@ from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
+from controller.Networker import *
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -29,6 +32,12 @@ class ManagerScreen(Screen):
         if 'content' in self.ids:
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
+
+class StandardPop(Popup):
+    pass
+
+class ListItems(ListItemButton):
+    pass
 
 class ListViewModal(BoxLayout):
     data = ListProperty()
@@ -40,7 +49,7 @@ class ListViewModal(BoxLayout):
                                              'height': 25}
         self.list_adapter = ListAdapter(data=self.data,
                                         args_converter=args_converter,
-                                        cls=ListItemButton,
+                                        cls=ListItems,
                                         selection_mode='single',
                                         allow_empty_selection=False)
 
@@ -119,7 +128,20 @@ class ManagerApp(App):
             self.get_index('Chooser')
         self.load_screen(self.index)
 
-    def connect(self):
+    def connect(self, host):
+        net = Networker()
+        for x in range(0, len(Active.cl.c_list)):
+            if Active.cl.c_list[x].name == host:
+                net.connect_to(host)
+                net.send_val(Active.cl.c_list[x].token)
+            if net.get_ack() != net.SOCK_ACK:
+                print("Error on token negociation")
+                exit("End of program")
+            net.send_val(Active.cl.c_list[x].password)
+            if net.get_ack() != net.SOCK_ACK:
+                print("Error on root password negociation")
+            net.s.close()
+            break
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -127,8 +149,6 @@ class ManagerApp(App):
         Active.cl.add_client(Client(token, server, pw))
         self.get_index('Chooser')
         self.load_screen(self.index)
-
-
 
     def on_pause(self):
         return True

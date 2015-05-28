@@ -1,9 +1,7 @@
 __author__ = 'Derek'
 
 from model.Client import *
-from model.Client import Client
-from controller.Crypter import Crypter
-
+from controller.Networker import *
 def init():
     global cl
     global user

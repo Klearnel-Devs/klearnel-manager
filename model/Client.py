@@ -57,7 +57,7 @@ class Client:
         self.password = Crypter.encrypt(encrypt_pwd)
 
     def __str__(self):
-        return "Client "+self.name+": TK="+self.token
+        return self.name
 
 if __name__ == '__main__':
     from controller.Crypter import Crypter
