@@ -1,3 +1,28 @@
 ManagerScreen:
     name: 'Settings'
     fullscreen: True
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            ActionView:
+                id: av
+                ActionPrevious:
+                ActionSpinner:
+                    id: spnr
+                    important: True
+                    text: 'Jump to Screen'
+                    values: app.screen_names
+                    on_text:
+                        app.go_screen(args[1])
+                ActionToggleButton:
+                ActionButton:
+                    text: 'Previous screen'
+                    on_press:
+                        app.go_screen('Quarantine')
+
+                ActionButton:
+                    text: 'Next screen'
+                    on_press:
+                        app.go_screen('Scanner')
+        Label:
+            text: "Settings"

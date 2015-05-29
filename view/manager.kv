@@ -3,6 +3,22 @@
 #:import Factory kivy.factory.Factory
 
 
+<ActionSpinnerOptions@SpinnerOption>
+    background_color: .4, .4, .4, 1
+
+<ActionSpinner@Spinner+ActionItem>
+    canvas.before:
+        Color:
+            rgba: 0.128, 0.128, 0.128, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    border: 27, 20, 12, 12
+    option_cls: Factory.ActionSpinnerOptions
+
+<ActionDropdown>:
+    on_size: self.width = '220dp'
+
 <ManagerScreen>:
     ScrollView:
         do_scroll_x: False
@@ -27,6 +43,8 @@ BoxLayout:
         Rectangle:
             size: self.size
             source: '../view/data/background.png'
+
+
 
     ScreenManager:
         id: sm
