@@ -24,6 +24,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from controller.Networker import *
+from model.Exceptions import *
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -32,9 +33,6 @@ class ManagerScreen(Screen):
         if 'content' in self.ids:
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
-
-class StandardPop(Popup):
-    pass
 
 class ListItems(ListItemButton):
     pass
@@ -131,17 +129,25 @@ class ManagerApp(App):
     def connect(self, host):
         net = Networker()
         for x in range(0, len(Active.cl.c_list)):
-            if Active.cl.c_list[x].name == host:
-                net.connect_to(host)
-                net.send_val(Active.cl.c_list[x].token)
-            if net.get_ack() != net.SOCK_ACK:
-                print("Error on token negociation")
-                exit("End of program")
-            net.send_val(Active.cl.c_list[x].password)
-            if net.get_ack() != net.SOCK_ACK:
-                print("Error on root password negociation")
-            net.s.close()
-            break
+            try:
+                if Active.cl.c_list[x].name == host:
+                    net.connect_to(host)
+                    net.send_val(Active.cl.c_list[x].token)
+                if net.get_ack() != net.SOCK_ACK:
+                    print("Error on token negociation")
+                    exit("End of program")
+                net.send_val(Active.cl.c_list[x].password)
+                if net.get_ack() != net.SOCK_ACK:
+                    print("Error on root password negociation")
+                net.s.close()
+                break
+            except NoConnectivity:
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Unable to connect to host " + host))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "No connectivity"
+                popup.open()
+                return
         self.get_index('Scanner')
         self.load_screen(self.index)
 

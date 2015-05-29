@@ -5,7 +5,7 @@ __author__ = 'antoine'
 import socket
 
 from controller.Crypter import Crypter
-
+from model.Exceptions import *
 
 class Networker:
     """Class Networker to make interaction with Klearnel module"""
@@ -21,9 +21,10 @@ class Networker:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect_to(self, host, port=42225):
-        ip_addr = socket.gethostbyname(host)
-        if ip_addr is None:
-            raise Exception("Unable to find "+host)
+        try:
+            ip_addr = socket.gethostbyname(host)
+        except:
+            raise NoConnectivity("Unable to find "+host)
         self.s.connect((ip_addr, port))
 
     def send_val(self, value):
