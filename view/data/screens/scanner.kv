@@ -1,13 +1,16 @@
 ManagerScreen:
     name: 'Scanner'
     fullscreen: True
+
     BoxLayout:
         orientation: 'vertical'
         ActionBar:
+            size_hint_y: None
+            size: (root.width, root.height/20)
             ActionView:
                 id: av
                 ActionPrevious:
-
+                    text: "Logout"
 
                 ActionSpinner:
                     id: spnr
@@ -29,5 +32,21 @@ ManagerScreen:
                     on_press:
                         app.go_screen('Quarantine')
 
-        Label:
-            text: "Scanner"
+        ScannerViewModal:
+            size_hint_y: None
+            size: (root.width, (root.height - (root.height/20) - (root.height/20) - 20 ))
+            id: svm
+            orientation: 'vertical'
+
+            ListView:
+                id: lv2
+        BoxLayout:
+            size_hint_y: None
+            size: (root.width, root.height/20)
+            orientation: 'horizontal'
+            Button:
+                text: 'Add'
+            Button:
+                text: 'Modify'
+            Button:
+                text: 'Delete'

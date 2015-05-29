@@ -4,9 +4,12 @@ ManagerScreen:
     BoxLayout:
         orientation: 'vertical'
         ActionBar:
+            size_hint_y: None
+            size: (root.width, root.height/20)
             ActionView:
                 id: av
                 ActionPrevious:
+                    text: "Logout"
                 ActionSpinner:
                     id: spnr
                     important: True
@@ -24,5 +27,20 @@ ManagerScreen:
                     text: 'Next screen'
                     on_press:
                         app.go_screen('Settings')
-        Label:
-            text: "Quarantine"
+        QuarantineViewModal:
+            size_hint_y: None
+            size: (root.width, (root.height - (root.height/20) - (root.height/20) - 20 ))
+            id: qvm
+            orientation: 'vertical'
+            ListView:
+                id: lv3
+        BoxLayout:
+            size_hint_y: None
+            size: (root.width, root.height/20)
+            orientation: 'horizontal'
+            Button:
+                text: 'Add'
+            Button:
+                text: 'Restore'
+            Button:
+                text: 'Delete Permanently'

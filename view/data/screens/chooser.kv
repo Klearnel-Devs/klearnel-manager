@@ -1,9 +1,6 @@
 #:import lv kivy.uix.listview
 #:import la kivy.adapters.listadapter
 
-<ListItems@ListItemButton>
-    on_press: app.connect(self.text)
-
 ManagerScreen:
     name: 'Chooser'
     fullscreen: True
@@ -26,7 +23,7 @@ ManagerScreen:
         AnchorLayout:
             anchor_x: 'center'
             anchor_y: 'center'
-            padding: root.width/10
+            padding: root.width/8
 
             GridLayout:
                 cols: 2

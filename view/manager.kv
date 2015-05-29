@@ -1,7 +1,18 @@
 #:kivy 1.9.0
 #:import KivyLexer kivy.extras.highlight.KivyLexer
 #:import Factory kivy.factory.Factory
+#<Widget>:
+#    canvas.after:
+#        Line:
+#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+#            dash_offset: 5
+#            dash_length: 3
 
+<QuarantineItem@ListItemButton>
+<ScannerItem@ListItemButton>
+
+<ListItems@ListItemButton>
+    on_press: app.connect(self.text)
 
 <ActionSpinnerOptions@SpinnerOption>
     background_color: .4, .4, .4, 1

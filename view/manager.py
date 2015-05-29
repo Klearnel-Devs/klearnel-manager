@@ -40,8 +40,54 @@ class ManagerScreen(Screen):
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
 
+
+class ScannerItem(ListItemButton):
+    pass
+
+
+class QuarantineItem(ListItemButton):
+    pass
+
+
 class ListItems(ListItemButton):
     pass
+
+
+class ScannerViewModal(BoxLayout):
+    data = ListProperty()
+
+    def __init__(self, **kwargs):
+        self.data = [{'text': format(i), 'is_selected': False} for i in range(0, 50)]
+        args_converter = lambda row_index, rec: {'text': rec['text'],
+                                                 'size_hint_y': None,
+                                                 'height': 25}
+        self.list_adapter = ListAdapter(data=self.data,
+                                        args_converter=args_converter,
+                                        cls=ScannerItem,
+                                        selection_mode='single',
+                                        allow_empty_selection=False)
+
+        super(ScannerViewModal, self).__init__(**kwargs)
+        self.add_widget(ListView(adapter=self.list_adapter))
+
+
+class QuarantineViewModal(BoxLayout):
+    data = ListProperty()
+
+    def __init__(self, **kwargs):
+        self.data = [{'text': format(i), 'is_selected': False} for i in range(0, 50)]
+        args_converter = lambda row_index, rec: {'text': rec['text'],
+                                                 'size_hint_y': None,
+                                                 'height': 25}
+        self.list_adapter = ListAdapter(data=self.data,
+                                        args_converter=args_converter,
+                                        cls=QuarantineItem,
+                                        selection_mode='single',
+                                        allow_empty_selection=False)
+
+        super(QuarantineViewModal, self).__init__(**kwargs)
+        self.add_widget(ListView(adapter=self.list_adapter))
+
 
 class ListViewModal(BoxLayout):
     data = ListProperty()
@@ -49,24 +95,16 @@ class ListViewModal(BoxLayout):
     def __init__(self, **kwargs):
         self.data = [{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
         args_converter = lambda row_index, rec: {'text': rec['text'],
-                                             'size_hint_y': None,
-                                             'height': 25}
+                                                 'size_hint_y': None,
+                                                 'height': 25}
         self.list_adapter = ListAdapter(data=self.data,
                                         args_converter=args_converter,
                                         cls=ListItems,
                                         selection_mode='single',
                                         allow_empty_selection=False)
-
         super(ListViewModal, self).__init__(**kwargs)
         self.add_widget(ListView(adapter=self.list_adapter))
-        Clock.schedule_interval(self.update_data, 5)
 
-    def update_data(self, dt):
-        if len(self.data) != len(Active.cl.c_list):
-            for x in range(len(self.data), len(Active.cl.c_list)):
-                self.data.append({'text': str(Active.cl.c_list[x]), 'is_selected': False})
-                self.list_adapter.update_for_new_data()
-                print("Added")
 
 
 class ManagerApp(App):
@@ -108,6 +146,7 @@ class ManagerApp(App):
                 self.index = x
 
     def load_screen(self, index):
+        # REMOVE FOR CONSISTENT REFRESH
         if index in self.screens:
             sm = self.root.ids.sm
             sm.switch_to(self.screens[index], direction='left')
