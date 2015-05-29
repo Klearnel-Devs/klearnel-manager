@@ -29,6 +29,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from controller.Networker import *
 from model.Exceptions import *
+import re
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -121,18 +122,26 @@ class ManagerApp(App):
         self.current_title = screen.name
 
     def register(self, user, pwd, pwd_verif):
-        if pwd != pwd_verif and pwd is not None and pwd_verif is not None:
-            content = BoxLayout(orientation="vertical")
-            content.add_widget(Label(text="The passwords don't match"))
-            but_ok = Button(text="OK")
-
-            wrong_cred = Popup(title="Creation Failed", size_hint=(None, None),
-                               size=(256, 256), auto_dismiss=False)
-            but_ok.bind(on_press=wrong_cred.dismiss)
-            content.add_widget(but_ok)
-            wrong_cred.content = content
-            wrong_cred.open()
-
+        if pwd != pwd_verif:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text="Passwords do not match"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Registration Error"
+            popup.open()
+        elif not re.search(r'[a-z]', user) or (len(user) < 4):
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Username must not be empty\n"
+                                        "and a minimum of 4 characters"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Registration Error"
+            popup.open()
+        elif (len(pwd) < 6) or not re.search(r'[a-z]', pwd) or not re.search(r'[0-9]', pwd):
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Password must not be empty and a\n"
+                                        "minimum of 6 characters and numbers"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Registration Error"
+            popup.open()
         else:
             f = open(self.user_db, mode='w')
             f.write(str(Crypter.encrypt(user)))
@@ -152,17 +161,11 @@ class ManagerApp(App):
         user_f = tab_user[0]
         pwd_f = tab_user[1]
         if (str(user_f) != str(user)) or (str(pwd_f) != str(pwd)):
-            content = BoxLayout(orientation="vertical")
-            content.add_widget(Label(text="Wrong credentials"))
-            but_ok = Button(text="OK")
-
-            wrong_cred = Popup(title="Login Failed", size_hint=(None, None),
-                               size=(256, 256), auto_dismiss=False)
-            but_ok.bind(on_press=wrong_cred.dismiss)
-            content.add_widget(but_ok)
-            wrong_cred.content = content
-            wrong_cred.open()
-
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Wrong username or password"))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "Bad Credentials"
+                popup.open()
         else:
             if not Active.cl.c_list:
                 self.get_index('AddServ')
@@ -196,9 +199,28 @@ class ManagerApp(App):
         self.load_screen(self.index)
 
     def addsrv(self, server, pw, token):
-        Active.cl.add_client(Client(token, server, pw))
-        self.get_index('Chooser')
-        self.load_screen(self.index)
+        if len(server) < 1:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text="Client name must not be empty"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Client Name Error"
+            popup.open()
+        elif len(pw) < 4:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Password must not be empty"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Password Error"
+            popup.open()
+        elif 'KL' not in token or not re.search(r'[0-9]', token):
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Invalid token format"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Token Error"
+            popup.open()
+        else:
+            Active.cl.add_client(Client(token, server, pw))
+            self.get_index('Chooser')
+            self.load_screen(self.index)
 
     def on_pause(self):
         return True
