@@ -4,7 +4,7 @@ __author__ = 'Derek'
 """
 from time import time
 from kivy.app import App
-from os.path import dirname, join
+from os.path import *
 from kivy.lang import Builder
 from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
     ListProperty
@@ -20,7 +20,11 @@ from kivy.uix.modalview import ModalView
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
+from controller.Crypter import Crypter
+from kivy.uix.button import Button
+import ast
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from controller.Networker import *
@@ -71,6 +75,7 @@ class ManagerApp(App):
     sourcecode = StringProperty()
     screen_names = ListProperty([])
     hierarchy = ListProperty([])
+    user_db = "../user.db"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -83,12 +88,12 @@ class ManagerApp(App):
             'Creation', 'Login', 'Chooser', 'Scanner', 'Quarantine',
             'Settings', 'AddServ'])
         self.screen_names = self.available_screens
-        curdir = dirname(__file__)
+        curdir = "../view/"
         self.available_screens = [join(curdir, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
         self.initial_screen()
 
     def initial_screen(self):
-        if Active.user is None:
+        if not exists(self.user_db):
             self.get_index('Creation')
         else:
             self.get_index('Login')
@@ -115,16 +120,55 @@ class ManagerApp(App):
         sm.switch_to(screen, direction='left')
         self.current_title = screen.name
 
-    def register(self):
-        self.get_index('Login')
-        self.load_screen(self.index)
+    def register(self, user, pwd, pwd_verif):
+        if pwd != pwd_verif and pwd is not None and pwd_verif is not None:
+            content = BoxLayout(orientation="vertical")
+            content.add_widget(Label(text="The passwords don't match"))
+            but_ok = Button(text="OK")
 
-    def login(self):
-        if not Active.cl.c_list:
-            self.get_index('AddServ')
+            wrong_cred = Popup(title="Creation Failed", size_hint=(None, None),
+                               size=(256, 256), auto_dismiss=False)
+            but_ok.bind(on_press=wrong_cred.dismiss)
+            content.add_widget(but_ok)
+            wrong_cred.content = content
+            wrong_cred.open()
+
         else:
-            self.get_index('Chooser')
-        self.load_screen(self.index)
+            f = open(self.user_db, mode='w')
+            f.write(str(Crypter.encrypt(user)))
+            f.write(':sep:')
+            f.write(str(Crypter.encrypt(pwd)))
+            f.close()
+            self.get_index('Login')
+            self.load_screen(self.index)
+
+    def login(self, user, pwd):
+        f = open(self.user_db, mode='r')
+        file_c = f.read()
+        f.close()
+        user = Crypter.encrypt(user)
+        pwd = Crypter.encrypt(pwd)
+        tab_user = file_c.split(':sep:')
+        user_f = tab_user[0]
+        pwd_f = tab_user[1]
+        if (str(user_f) != str(user)) or (str(pwd_f) != str(pwd)):
+            content = BoxLayout(orientation="vertical")
+            content.add_widget(Label(text="Wrong credentials"))
+            but_ok = Button(text="OK")
+
+            wrong_cred = Popup(title="Login Failed", size_hint=(None, None),
+                               size=(256, 256), auto_dismiss=False)
+            but_ok.bind(on_press=wrong_cred.dismiss)
+            content.add_widget(but_ok)
+            wrong_cred.content = content
+            wrong_cred.open()
+
+        else:
+            if not Active.cl.c_list:
+                self.get_index('AddServ')
+            else:
+                self.get_index('Chooser')
+            self.load_screen(self.index)
 
     def connect(self, host):
         net = Networker()

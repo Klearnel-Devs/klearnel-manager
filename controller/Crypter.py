@@ -9,3 +9,4 @@ class Crypter:
         h = sha256()
         h.update(bytes(data_to_hash, 'UTF-8'))
         return h.digest()
+
