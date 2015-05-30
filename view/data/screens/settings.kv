@@ -10,6 +10,8 @@ ManagerScreen:
                 id: av
                 ActionPrevious:
                     text: "Logout"
+                    on_press:
+                        app.logout()
                 ActionSpinner:
                     id: spnr
                     important: True
@@ -29,15 +31,18 @@ ManagerScreen:
                         app.go_screen('Scanner')
         ScrollView:
             do_scroll_x: False
-            do_scroll_y: False if root.fullscreen else (content.height > root.height - dp(16))
+            do_scroll_y: True
+            size: self.size
             GridLayout:
+                size_hint_y: None
+                size: (400, 800)
                 cols: 1
                 rows: 5
                 spacing: 30
-                row_default_height: 30
                 GridLayout:
                     cols:2
                     rows: 5
+                    row_default_height: 30
                     Widget:
                         Label:
                             text: "Global Configuration Options"
@@ -48,27 +53,44 @@ ManagerScreen:
                     Label:
                     Label:
                         text: "Small Definition"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Medium Definition"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Large Definition"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Maximum Log Age"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                 GridLayout:
                     rows: 4
                     cols: 2
+                    row_default_height: 30
                     Widget:
                         Label:
                             text: "Small Files & Folders"
@@ -79,21 +101,32 @@ ManagerScreen:
                     Label:
                     Label:
                         text: "Expiration Limit (in days)"
+                        size_hint_x:None
+                        width: self.parent.width/3
 
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Backup?"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     CheckBox:
                     Label:
                         text: "Backup Location"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                 GridLayout:
                     rows: 4
                     cols: 2
+                    row_default_height: 30
                     Widget:
                         Label:
                             text: "Medium Files & Folders"
@@ -104,21 +137,32 @@ ManagerScreen:
                     Label:
                     Label:
                         text: "Expiration Limit (in days)"
+                        size_hint_x:None
+                        width: self.parent.width/3
 
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Backup?"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     CheckBox:
                     Label:
                         text: "Backup Location"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                 GridLayout:
                     rows: 4
                     cols: 2
+                    row_default_height: 30
                     Widget:
                         Label:
                             text: "Large Files & Folders"
@@ -129,21 +173,32 @@ ManagerScreen:
                     Label:
                     Label:
                         text: "Expiration Limit (in days)"
+                        size_hint_x:None
+                        width: self.parent.width/3
 
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                     Label:
                         text: "Backup?"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     CheckBox:
                     Label:
                         text: "Backup Location"
+                        size_hint_x:None
+                        width: self.parent.width/3
                     TextInput:
                         write_tab: False
                         multiline: False
+                        size_hint_x:None
+                        width: self.parent.width*(2/3)
                 GridLayout:
                     rows: 1
                     cols: 4
+                    row_default_height: 30
                     Label:
                     Button:
                         text: "Save"

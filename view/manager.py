@@ -8,19 +8,18 @@ from kivy.lang import Builder
 from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
     ListProperty
 from kivy.uix.screenmanager import Screen
-from model.Client import *
-from controller import Active
 from kivy.uix.label import Label
 import sys
 from kivy.adapters.listadapter import ListAdapter
-from kivy.uix.listview import ListItemButton, ListView
+from kivy.adapters.dictadapter import DictAdapter
+from kivy.uix.listview import ListItemButton, ListView, CompositeListItem, ListItemLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from controller.Networker import *
-from model.Exceptions import *
+from controller.Tasker import *
+from model.Client import Client
+from controller import Active
 import re
-
-global cl
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -65,18 +64,33 @@ class QuarantineViewModal(BoxLayout):
     data = ListProperty()
 
     def __init__(self, **kwargs):
-        self.data = [{'text': format(i), 'is_selected': False} for i in range(0, 50)]
-        args_converter = lambda row_index, rec: {'text': rec['text'],
-                                                 'size_hint_y': None,
-                                                 'height': 25}
-        self.list_adapter = ListAdapter(data=self.data,
-                                        args_converter=args_converter,
-                                        cls=QuarantineItem,
-                                        selection_mode='single',
-                                        allow_empty_selection=False)
+        args_converter = lambda row_index, rec: \
+            {'text': rec['text'],
+             'text2': rec['text2'],
+             'size_hint_y': None,
+             'height': 25,
+             'cls_dicts': [{'cls': ListItemButton,
+                            'kwargs': {'text': rec['text']}},
+                           {'cls': ListItemLabel,
+                            'kwargs': {'text': "Middle-{0}".format(rec['text']),
+                                       'is_representing_cls': True}},
+                           {'cls': ListItemButton,
+                            'kwargs': {'text2': rec['text2']}}]}
+
+        self.item_strings = ["{0}".format(index) for index in range(100)]
+
+        integers_dict = \
+            {str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
+
+        self.dict_adapter = DictAdapter(sorted_keys=self.item_strings,
+                                   data=integers_dict,
+                                   args_converter=args_converter,
+                                   selection_mode='single',
+                                   allow_empty_selection=False,
+                                   cls=CompositeListItem)
 
         super(QuarantineViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.list_adapter))
+        self.add_widget(ListView(adapter=self.dict_adapter))
 
 
 class ListViewModal(BoxLayout):
@@ -138,11 +152,11 @@ class ManagerApp(App):
 
     def load_screen(self, index):
         # REMOVE FOR CONSISTENT REFRESH
-        if index in self.screens:
-            sm = self.root.ids.sm
-            sm.switch_to(self.screens[index], direction='left')
-            self.current_title = self.screens[index].name
-            return self.screens[index]
+        # if index in self.screens:
+        #     sm = self.root.ids.sm
+        #     sm.switch_to(self.screens[index], direction='left')
+        #     self.current_title = self.screens[index].name
+        #     return self.screens[index]
         screen = Builder.load_file(self.available_screens[index].lower())
         self.screens[index] = screen
         sm = self.root.ids.sm
@@ -204,50 +218,50 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        net = Networker()
-        for x in range(0, len(Active.cl.c_list)):
-            try:
-                if Active.cl.c_list[x].name == host:
-                    net.connect_to(host)
-                    net.send_val(Active.cl.c_list[x].token)
-                    if net.get_ack() != net.SOCK_ACK:
-                        print("Error on token negotiation")
-                        exit("End of program")
-                    net.send_val(Active.cl.c_list[x].password)
-                    if net.get_ack() != net.SOCK_ACK:
-                        print("Error on root password negotiation")
-                    net.s.close()
-                    break
-            except NoConnectivity:
-                popup = Popup(size_hint=(None, None), size=(300, 150))
-                popup.add_widget(Label(text="Unable to connect to host " + host))
-                popup.bind(on_press=popup.dismiss)
-                popup.title = "No connectivity"
-                popup.open()
-                return
+        # net = Networker()
+        # for x in range(0, len(Active.cl.c_list)):
+        #     try:
+        #         if Active.cl.c_list[x].name == host:
+        #             net.connect_to(host)
+        #             net.send_val(Active.cl.c_list[x].token)
+        #             if net.get_ack() != net.SOCK_ACK:
+        #                 print("Error on token negotiation")
+        #                 exit("End of program")
+        #             net.send_val(Active.cl.c_list[x].password)
+        #             if net.get_ack() != net.SOCK_ACK:
+        #                 print("Error on root password negotiation")
+        #             net.s.close()
+        #             break
+        #     except NoConnectivity:
+        #         popup = Popup(size_hint=(None, None), size=(300, 150))
+        #         popup.add_widget(Label(text="Unable to connect to host " + host))
+        #         popup.bind(on_press=popup.dismiss)
+        #         popup.title = "No connectivity"
+        #         popup.open()
+        #         return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
     def addsrv(self, server, pw, token):
-        if len(server) < 1:
-            popup = Popup(size_hint=(None, None), size=(300, 150))
-            popup.add_widget(Label(text="Client name must not be empty"))
-            popup.bind(on_press=popup.dismiss)
-            popup.title = "Client Name Error"
-            popup.open()
-        elif len(pw) < 4:
-            popup = Popup(size_hint=(None, None), size=(400, 150))
-            popup.add_widget(Label(text="Password must not be empty"))
-            popup.bind(on_press=popup.dismiss)
-            popup.title = "Password Error"
-            popup.open()
-        elif 'KL' not in token or not re.search(r'[0-9]', token):
-            popup = Popup(size_hint=(None, None), size=(400, 150))
-            popup.add_widget(Label(text="Invalid token format"))
-            popup.bind(on_press=popup.dismiss)
-            popup.title = "Token Error"
-            popup.open()
-        else:
+        # if len(server) < 1:
+        #     popup = Popup(size_hint=(None, None), size=(300, 150))
+        #     popup.add_widget(Label(text="Client name must not be empty"))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = "Client Name Error"
+        #     popup.open()
+        # elif len(pw) < 4:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text="Password must not be empty"))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = "Password Error"
+        #     popup.open()
+        # elif 'KL' not in token or not re.search(r'[0-9]', token):
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text="Invalid token format"))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = "Token Error"
+        #     popup.open()
+        # else:
             Active.cl.add_client(Active.cl, Client(token, server, pw))
             self.get_index('Chooser')
             self.load_screen(self.index)
@@ -267,5 +281,8 @@ class ManagerApp(App):
     def quit(self):
         sys.exit(0)
 
+    def logout(self):
+        self.get_index("Login")
+        self.load_screen(self.index)
 if __name__ == '__main__':
     ManagerApp().run()
