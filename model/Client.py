@@ -4,6 +4,7 @@ __author__ = 'antoine'
 """
 import os.path
 import pickle
+from controller import Active
 
 class ClientList:
     c_list = []
@@ -11,7 +12,7 @@ class ClientList:
 
     def add_client(self, client):
         self.c_list.append(client)
-        self.save_list()
+        self.save_list(self)
 
     def rm_client(self, idx):
         self.c_list.pop(idx)
@@ -26,7 +27,7 @@ class ClientList:
             pickle.dump(self.c_list[i], f)
         f.close()
         self.c_list.clear()
-        self.load_list()
+        self.load_list(self)
 
     def load_list(self):
 
@@ -35,7 +36,8 @@ class ClientList:
             length = pickle.load(f)
             for i in range(0, length):
                 obj = pickle.load(f)
-                self.c_list.append(obj)
+                if obj.user == Active.user:
+                    self.c_list.append(obj)
             f.close()
 
     def __str__(self):
@@ -51,12 +53,12 @@ class Client:
     password = None
     name = None
 
-    def __init__(self, user, token, name, encrypt_pwd):
+    def __init__(self, token, name, encrypt_pwd):
         from controller.Crypter import Crypter
         self.token = token
         self.name = name
         self.password = Crypter.encrypt(encrypt_pwd)
-        self.user = Crypter.encrypt(user)
+        self.user = Active.user
 
     def __str__(self):
         return self.name

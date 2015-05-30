@@ -2,35 +2,25 @@ __author__ = 'Derek'
 """
     Klearnel Manager GUI
 """
-from time import time
 from kivy.app import App
 from os.path import *
 from kivy.lang import Builder
 from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
     ListProperty
-from kivy.clock import Clock
-from kivy.animation import Animation
 from kivy.uix.screenmanager import Screen
 from model.Client import *
 from controller import Active
-from kivy.uix.carousel import Carousel
 from kivy.uix.label import Label
 import sys
-from kivy.uix.modalview import ModalView
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
-from kivy.uix.textinput import TextInput
-from controller.Crypter import Crypter
-from kivy.uix.button import Button
-import ast
-from kivy.uix.popup import Popup
-from kivy.uix.button import Button
 from controller.Networker import *
 from model.Exceptions import *
 import re
-from kivy.uix.actionbar import ActionBar
+
+global cl
 
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
@@ -122,6 +112,7 @@ class ManagerApp(App):
         super().__init__(**kwargs)
         self.screens = {}
         self.available_screens = {}
+        Active.cl = ClientList
 
     def build(self):
         self.title = 'Klearnel Manager'
@@ -189,21 +180,23 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def login(self, user, pwd):
-        # f = open(self.user_db, mode='r')
-        # file_c = f.read()
-        # f.close()
-        # user = Crypter.encrypt(user)
-        # pwd = Crypter.encrypt(pwd)
-        # tab_user = file_c.split(':sep:')
-        # user_f = tab_user[0]
-        # pwd_f = tab_user[1]
-        # if (str(user_f) != str(user)) or (str(pwd_f) != str(pwd)):
-        #         popup = Popup(size_hint=(None, None), size=(300, 150))
-        #         popup.add_widget(Label(text="Wrong username or password"))
-        #         popup.bind(on_press=popup.dismiss)
-        #         popup.title = "Bad Credentials"
-        #         popup.open()
-        # else:
+        f = open(self.user_db, mode='r')
+        file_c = f.read()
+        f.close()
+        user = Crypter.encrypt(user)
+        pwd = Crypter.encrypt(pwd)
+        tab_user = file_c.split(':sep:')
+        user_f = tab_user[0]
+        pwd_f = tab_user[1]
+        if (str(user_f) != str(user)) or (str(pwd_f) != str(pwd)):
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Wrong username or password"))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "Bad Credentials"
+                popup.open()
+        else:
+            Active.user = user
+            Active.cl.load_list(Active.cl)
             if not Active.cl.c_list:
                 self.get_index('AddServ')
             else:
@@ -211,27 +204,27 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        # net = Networker()
-        # for x in range(0, len(Active.cl.c_list)):
-        #     try:
-        #         if Active.cl.c_list[x].name == host:
-        #             net.connect_to(host)
-        #             net.send_val(Active.cl.c_list[x].token)
-        #         if net.get_ack() != net.SOCK_ACK:
-        #             print("Error on token negociation")
-        #             exit("End of program")
-        #         net.send_val(Active.cl.c_list[x].password)
-        #         if net.get_ack() != net.SOCK_ACK:
-        #             print("Error on root password negociation")
-        #         net.s.close()
-        #         break
-        #     except NoConnectivity:
-        #         popup = Popup(size_hint=(None, None), size=(300, 150))
-        #         popup.add_widget(Label(text="Unable to connect to host " + host))
-        #         popup.bind(on_press=popup.dismiss)
-        #         popup.title = "No connectivity"
-        #         popup.open()
-        #         return
+        net = Networker()
+        for x in range(0, len(Active.cl.c_list)):
+            try:
+                if Active.cl.c_list[x].name == host:
+                    net.connect_to(host)
+                    net.send_val(Active.cl.c_list[x].token)
+                    if net.get_ack() != net.SOCK_ACK:
+                        print("Error on token negotiation")
+                        exit("End of program")
+                    net.send_val(Active.cl.c_list[x].password)
+                    if net.get_ack() != net.SOCK_ACK:
+                        print("Error on root password negotiation")
+                    net.s.close()
+                    break
+            except NoConnectivity:
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Unable to connect to host " + host))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "No connectivity"
+                popup.open()
+                return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -255,7 +248,7 @@ class ManagerApp(App):
             popup.title = "Token Error"
             popup.open()
         else:
-            Active.cl.add_client(Client(token, server, pw))
+            Active.cl.add_client(Active.cl, Client(token, server, pw))
             self.get_index('Chooser')
             self.load_screen(self.index)
 
