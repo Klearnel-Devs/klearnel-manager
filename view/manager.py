@@ -71,20 +71,6 @@ class QuarantineViewModal(BoxLayout):
         for x in range(0, len(Active.qrList)):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})
-        # args_converter = lambda row_index, rec: \
-        #     {'text': rec['filename'],
-        #      'size_hint_y': None,
-        #      'height': 25,
-        #      'cls_dicts': [{'cls': ListItemLabel,
-        #                     'kwargs': {'text': rec['filename']}},
-        #                    {'cls': ListItemLabel,
-        #                     'kwargs': {'text': rec['old_path'],
-        #                                'is_representing_cls': True}}]}
-
-        self.item_strings = ["{0}".format(index) for index in range(100)]
-
-        integers_dict = \
-            {str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
 
         self.dict_adapter = ListAdapter(data=self.qrdata,
                                         args_converter=self.formatter,

@@ -17,7 +17,7 @@ ManagerScreen:
                 ActionSpinner:
                     id: spnr
                     important: True
-                    text: 'Jump to Screen'
+                    text: 'Scanner'
                     values: app.screen_names
                     on_text:
                         app.go_screen(args[1])
@@ -39,9 +39,10 @@ ManagerScreen:
             size: (root.width, (root.height - (root.height/20) - (root.height/20) - 20 ))
             id: svm
             orientation: 'vertical'
-
             ListView:
                 id: lv2
+                size_hint_y: None
+                size: (1.0, 1.0)
         BoxLayout:
             size_hint_y: None
             size: (root.width, root.height/20)
