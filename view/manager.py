@@ -20,6 +20,8 @@ from controller.Tasker import *
 from model.Client import Client
 from controller import Active
 from model.Config import Config
+from model.QrElem import *
+from model.ScanElem import *
 import re
 
 class ManagerScreen(Screen):
@@ -47,7 +49,7 @@ class ScannerViewModal(BoxLayout):
     data = ListProperty()
 
     def __init__(self, **kwargs):
-        self.data = [{'text': format(i), 'is_selected': False} for i in range(0, 50)]
+        self.data = [{'text': Active.scanList[i].path, 'is_selected': False} for i in range(0, len(Active.scanList))]
         args_converter = lambda row_index, rec: {'text': rec['text'],
                                                  'size_hint_y': None,
                                                  'height': 25}
@@ -65,32 +67,42 @@ class QuarantineViewModal(BoxLayout):
     data = ListProperty()
 
     def __init__(self, **kwargs):
-        args_converter = lambda row_index, rec: \
-            {'text': rec['text'],
-             'size_hint_y': None,
-             'height': 25,
-             'cls_dicts': [{'cls': ListItemButton,
-                            'kwargs': {'text': rec['text']}},
-                           {'cls': ListItemLabel,
-                            'kwargs': {'text': "Middle-{0}".format(rec['text']),
-                                       'is_representing_cls': True}},
-                           {'cls': ListItemButton,
-                            'kwargs': {'text': rec['text']}}]}
+        self.qrdata = list()
+        for x in range(0, len(Active.qrList)):
+            self.qrdata.append({'filename': Active.qrList[x].f_name,
+                                'old_path': Active.qrList[x].o_path})
+        # args_converter = lambda row_index, rec: \
+        #     {'text': rec['filename'],
+        #      'size_hint_y': None,
+        #      'height': 25,
+        #      'cls_dicts': [{'cls': ListItemLabel,
+        #                     'kwargs': {'text': rec['filename']}},
+        #                    {'cls': ListItemLabel,
+        #                     'kwargs': {'text': rec['old_path'],
+        #                                'is_representing_cls': True}}]}
 
         self.item_strings = ["{0}".format(index) for index in range(100)]
 
         integers_dict = \
             {str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
 
-        self.dict_adapter = DictAdapter(sorted_keys=self.item_strings,
-                                   data=integers_dict,
-                                   args_converter=args_converter,
-                                   selection_mode='single',
-                                   allow_empty_selection=False,
-                                   cls=CompositeListItem)
+        self.dict_adapter = ListAdapter(data=self.qrdata,
+                                        args_converter=self.formatter,
+                                        selection_mode='multiple',
+                                        allow_empty_selection=False,
+                                        cls=CompositeListItem)
 
         super(QuarantineViewModal, self).__init__(**kwargs)
         self.add_widget(ListView(adapter=self.dict_adapter))
+
+    def formatter(self, row_index, qr_data):
+        return {'text': qr_data['filename'],
+                'size_hint_y': None,
+                'height': 50,
+                'cls_dicts': [{'cls': ListItemButton,
+                               'kwargs': {'text': "Filename: " + qr_data['filename']}},
+                              {'cls': ListItemLabel,
+                               'kwargs': {'text': "Old Path: " + qr_data['old_path']}}]}
 
 
 class ListViewModal(BoxLayout):
@@ -122,13 +134,16 @@ class ManagerApp(App):
     hierarchy = ListProperty([])
     user_db = "../user.db"
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screens = {}
         self.available_screens = {}
         Active.cl = ClientList
         Active.confList = Config
+        Active.qrList = [qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(),
+                         qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create()]
+        Active.scanList = [sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(),
+                           sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create()]
 
     def build(self):
         self.title = 'Klearnel Manager'

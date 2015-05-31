@@ -4,7 +4,7 @@ def init():
     global cl
     global user
     global scanList
-    global quarList
+    global qrList
     global confList
     global qr_task
     global scan_task
@@ -14,7 +14,7 @@ def init():
     qr_task = None
     scan_task = None
     confList = None
-    quarList = None
+    qrList = None
     scanList = None
     tasker = None
 

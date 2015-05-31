@@ -25,6 +25,8 @@ ManagerScreen:
                     width: root.width/2
                     multiline: False
                     write_tab: False
+                    focus: True
+                    on_text_validate: app.register(user.text, pwd.text, pwd_verif.text)
                 Label:
                     size_hint_x: None
                     width: root.width/3
@@ -36,6 +38,7 @@ ManagerScreen:
                     multiline: False
                     password: True
                     write_tab: False
+                    on_text_validate: app.register(user.text, pwd.text, pwd_verif.text)
                 Label:
                     size_hint_x: None
                     width: root.width/3
@@ -47,6 +50,7 @@ ManagerScreen:
                     multiline: False
                     password: True
                     write_tab: False
+                    on_text_validate: app.register(user.text, pwd.text, pwd_verif.text)
                 Button:
                     size_hint_x: None
                     width: root.width/3
