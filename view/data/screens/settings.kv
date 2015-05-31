@@ -1,3 +1,5 @@
+#:import Active controller
+
 ManagerScreen:
     name: 'Settings'
     fullscreen: True
@@ -52,7 +54,8 @@ ManagerScreen:
                             width: self.parent.width * 2
                     Label:
                     Label:
-                        text: "Small Definition"
+                        text: "Small Definition (in MB)"
+
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
@@ -60,8 +63,9 @@ ManagerScreen:
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('gbl', 'small')
                     Label:
-                        text: "Medium Definition"
+                        text: "Medium Definition (in MB)"
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
@@ -69,8 +73,9 @@ ManagerScreen:
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('gbl', 'medium')
                     Label:
-                        text: "Large Definition"
+                        text: "Large Definition (in MB)"
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
@@ -78,6 +83,7 @@ ManagerScreen:
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('gbl', 'large')
                     Label:
                         text: "Maximum Log Age"
                         size_hint_x:None
@@ -87,6 +93,7 @@ ManagerScreen:
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('gbl', 'log_age')
                 GridLayout:
                     rows: 4
                     cols: 2
@@ -105,24 +112,30 @@ ManagerScreen:
                         width: self.parent.width/3
 
                     TextInput:
+                        id: expSma
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('sma', 'exp_def')
                     Label:
                         text: "Backup?"
                         size_hint_x:None
                         width: self.parent.width/3
                     CheckBox:
+                        id: buSma
+                        active: app.getConf('sma', 'backup')
                     Label:
                         text: "Backup Location"
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
+                        id: locSma
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('sma', 'location')
                 GridLayout:
                     rows: 4
                     cols: 2
@@ -141,24 +154,30 @@ ManagerScreen:
                         width: self.parent.width/3
 
                     TextInput:
+                        id: expMed
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('med', 'exp_def')
                     Label:
                         text: "Backup?"
                         size_hint_x:None
                         width: self.parent.width/3
                     CheckBox:
+                        id: buMed
+                        active: app.getConf('med', 'backup')
                     Label:
                         text: "Backup Location"
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
+                        id: locMed
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('med', 'location')
                 GridLayout:
                     rows: 4
                     cols: 2
@@ -177,24 +196,30 @@ ManagerScreen:
                         width: self.parent.width/3
 
                     TextInput:
+                        id: expLrg
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('lrg', 'exp_def')
                     Label:
                         text: "Backup?"
                         size_hint_x:None
                         width: self.parent.width/3
                     CheckBox:
+                        id: buLrg
+                        active: app.getConf('lrg', 'backup')
                     Label:
                         text: "Backup Location"
                         size_hint_x:None
                         width: self.parent.width/3
                     TextInput:
+                        id: locLrg
                         write_tab: False
                         multiline: False
                         size_hint_x:None
                         width: self.parent.width*(2/3)
+                        text: app.getConf('lrg', 'location')
                 GridLayout:
                     rows: 1
                     cols: 4

@@ -8,6 +8,7 @@ def init():
     global confList
     global qr_task
     global scan_task
+    global tasker
     cl = None
     user = None
     qr_task = None
@@ -15,4 +16,6 @@ def init():
     confList = None
     quarList = None
     scanList = None
+    tasker = None
+
 

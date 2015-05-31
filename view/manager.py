@@ -19,6 +19,7 @@ from controller.Networker import *
 from controller.Tasker import *
 from model.Client import Client
 from controller import Active
+from model.Config import Config
 import re
 
 class ManagerScreen(Screen):
@@ -66,7 +67,6 @@ class QuarantineViewModal(BoxLayout):
     def __init__(self, **kwargs):
         args_converter = lambda row_index, rec: \
             {'text': rec['text'],
-             'text2': rec['text2'],
              'size_hint_y': None,
              'height': 25,
              'cls_dicts': [{'cls': ListItemButton,
@@ -75,7 +75,7 @@ class QuarantineViewModal(BoxLayout):
                             'kwargs': {'text': "Middle-{0}".format(rec['text']),
                                        'is_representing_cls': True}},
                            {'cls': ListItemButton,
-                            'kwargs': {'text2': rec['text2']}}]}
+                            'kwargs': {'text': rec['text']}}]}
 
         self.item_strings = ["{0}".format(index) for index in range(100)]
 
@@ -122,11 +122,13 @@ class ManagerApp(App):
     hierarchy = ListProperty([])
     user_db = "../user.db"
 
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screens = {}
         self.available_screens = {}
         Active.cl = ClientList
+        Active.confList = Config
 
     def build(self):
         self.title = 'Klearnel Manager'
@@ -151,12 +153,6 @@ class ManagerApp(App):
                 self.index = x
 
     def load_screen(self, index):
-        # REMOVE FOR CONSISTENT REFRESH
-        # if index in self.screens:
-        #     sm = self.root.ids.sm
-        #     sm.switch_to(self.screens[index], direction='left')
-        #     self.current_title = self.screens[index].name
-        #     return self.screens[index]
         screen = Builder.load_file(self.available_screens[index].lower())
         self.screens[index] = screen
         sm = self.root.ids.sm
@@ -284,5 +280,9 @@ class ManagerApp(App):
     def logout(self):
         self.get_index("Login")
         self.load_screen(self.index)
+
+    def getConf(self, section, entry):
+        return Active.confList.get_value(Active.confList, section, entry)
+
 if __name__ == '__main__':
     ManagerApp().run()
