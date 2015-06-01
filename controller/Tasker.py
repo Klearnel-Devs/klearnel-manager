@@ -241,6 +241,13 @@ class TaskQR(Tasker):
         net.s.close()
 
 
+class TaskConfig(Tasker):
+    def get_config(self, client):
+        pass
+
+    def send_conf_mod(self, client, section, key, new_value):
+        pass
+
 if __name__ == "__main__":
     cl = ClientList()
     cl.load_list()
