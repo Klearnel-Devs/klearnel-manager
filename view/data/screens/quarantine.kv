@@ -1,0 +1,49 @@
+ManagerScreen:
+    name: 'Quarantine'
+    fullscreen: True
+    BoxLayout:
+        orientation: 'vertical'
+        ActionBar:
+            size_hint_y: None
+            size: (root.width, root.height/20)
+            ActionView:
+                id: av
+                ActionPrevious:
+                    text: "Logout"
+                    on_press:
+                        app.logout()
+                ActionSpinner:
+                    id: spnr
+                    important: True
+                    text: 'Quarantine'
+                    values: app.screen_names
+                    on_text:
+                        app.go_screen(args[1])
+                ActionToggleButton:
+                ActionButton:
+                    text: 'Previous screen'
+                    on_press:
+                        app.go_screen('Scanner')
+
+                ActionButton:
+                    text: 'Next screen'
+                    on_press:
+                        app.go_screen('Settings')
+        QuarantineViewModal:
+            id: qvm
+            orientation: 'vertical'
+            ListView:
+                id: lv3
+                size_hint_y: None
+                size: (1.0, 1.0)
+
+        BoxLayout:
+            size_hint_y: None
+            size: (root.width, root.height/20)
+            orientation: 'horizontal'
+            Button:
+                text: 'Add'
+            Button:
+                text: 'Restore'
+            Button:
+                text: 'Delete Permanently'

@@ -2,8 +2,12 @@ __author__ = 'antoine'
 """
  Main class of the program
 """
-import view.Welcome as Welcome
+from view.manager import ManagerApp
+from controller import Active
+from model.Client import *
 
-mainView = Welcome.Welcome()
-mainView.set_title('Welcome')
+Active.init()
+mainView = ManagerApp()
 mainView.run()
+
+

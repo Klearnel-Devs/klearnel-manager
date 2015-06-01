@@ -1,0 +1,55 @@
+ManagerScreen:
+    name: 'Login'
+    fullscreen: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: '../view/data/resources/klearnel.png'
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            padding: root.width/10
+            GridLayout:
+                cols: 2
+                rows: 4
+                row_default_height: 30
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Username'
+                TextInput:
+                    id: user
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    write_tab: False
+                    focus: True
+                    on_text_validate: app.login(user.text, pwd.text)
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Password'
+                TextInput:
+                    id: pwd
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    password: True
+                    write_tab: False
+                    on_text_validate: app.login(user.text, pwd.text)
+                Button:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Quit'
+                    on_press:
+                        app.quit()
+
+                Button:
+                    size_hint_x: None
+                    width: root.width/2
+                    text: 'Login'
+                    on_press:
+                        app.login(user.text, pwd.text)
+        Label:
+            text: "Developed by Klearnel Devs"

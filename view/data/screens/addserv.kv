@@ -1,0 +1,79 @@
+ManagerScreen:
+    name: 'Add Server'
+    fullscreen: True
+
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: '../view/data/resources/klearnel.png'
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            padding: root.width/10
+            GridLayout:
+                cols: 2
+                rows: 5
+                row_default_height: 30
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Client Name'
+                TextInput:
+                    id: srv
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    write_tab: False
+                    focus: True
+                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Klearnel Password'
+                TextInput:
+                    id: pw
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    password: True
+                    write_tab: False
+                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Token ID'
+                TextInput:
+                    id: tk
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    password: True
+                    write_tab: False
+                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+        AnchorLayout:
+            anchor_x: 'center'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 30
+                Button:
+                    size_hint_x: None
+                    width: root.width/4
+                    text: 'Quit'
+                    on_press:
+                        app.quit()
+                Button:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Return'
+                    on_press:
+                        app.get_index('Chooser')
+                        app.load_screen(app.index)
+                Button:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'Add Server'
+                    on_press:
+                        app.addsrv(srv.text, pw.text, tk.text)
+        Label:
+            text: "Developed by Klearnel Devs"
