@@ -22,6 +22,7 @@ from controller import Active
 from model.Config import Config
 from model.QrElem import *
 from model.ScanElem import *
+from kivy.uix.checkbox import CheckBox
 import re
 
 class ManagerScreen(Screen):
@@ -32,35 +33,54 @@ class ManagerScreen(Screen):
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
 
-
-class ScannerItem(ListItemButton):
-    pass
-
-
-class QuarantineItem(ListItemButton):
-    pass
-
-
 class ListItems(ListItemButton):
     pass
-
 
 class ScannerViewModal(BoxLayout):
     data = ListProperty()
 
     def __init__(self, **kwargs):
-        self.data = [{'text': Active.scanList[i].path, 'is_selected': False} for i in range(0, len(Active.scanList))]
-        args_converter = lambda row_index, rec: {'text': rec['text'],
-                                                 'size_hint_y': None,
-                                                 'height': 25}
-        self.list_adapter = ListAdapter(data=self.data,
-                                        args_converter=args_converter,
-                                        cls=ScannerItem,
+        self.scdata = list()
+        self.orientation = 'vertical'
+        for x in range(0, len(Active.scanList)):
+            self.scdata.append({'path': Active.scanList[x].path,
+                                'options': Active.scanList[x].options})
+        self.list_adapter = ListAdapter(data=self.scdata,
+                                        args_converter=self.formatter,
+                                        cls=CompositeListItem,
                                         selection_mode='single',
                                         allow_empty_selection=False)
 
         super(ScannerViewModal, self).__init__(**kwargs)
         self.add_widget(ListView(adapter=self.list_adapter))
+
+    def formatter(self, row_index, scdata):
+        return {'text': scdata['path'],
+                'size_hint_y': None,
+                'height': 50,
+                'cls_dicts': [{'cls': ListItemButton,
+                               'kwargs': {'text': "Path: " + scdata['path'],
+                                          'size_hint_x': 10.0}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['BACKUP'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['DEL_F_SIZE'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['DUP_F'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['FUSE'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['INTEGRITY'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['CL_TEMP'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['DEL_F_OLD'])}},
+                              {'cls': CheckBox,
+                               'kwargs': {'active': bool(scdata['options']['BACKUP_OLD'])}}]}
 
 
 class QuarantineViewModal(BoxLayout):
@@ -126,10 +146,8 @@ class ManagerApp(App):
         self.available_screens = {}
         Active.cl = ClientList
         Active.confList = Config
-        Active.qrList = [qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(),
-                         qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create(), qr_temp_create()]
-        Active.scanList = [sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(),
-                           sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create(), sc_temp_create()]
+        Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
+        Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
 
     def build(self):
         self.title = 'Klearnel Manager'
