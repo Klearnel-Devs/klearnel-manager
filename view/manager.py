@@ -5,13 +5,10 @@ __author__ = 'Derek'
 from kivy.app import App
 from os.path import *
 from kivy.lang import Builder
-from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
-    ListProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 import sys
 from kivy.adapters.listadapter import ListAdapter
-from kivy.adapters.dictadapter import DictAdapter
 from kivy.uix.listview import ListItemButton, ListView, CompositeListItem, ListItemLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
@@ -233,50 +230,50 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        # net = Networker()
-        # for x in range(0, len(Active.cl.c_list)):
-        #     try:
-        #         if Active.cl.c_list[x].name == host:
-        #             net.connect_to(host)
-        #             net.send_val(Active.cl.c_list[x].token)
-        #             if net.get_ack() != net.SOCK_ACK:
-        #                 print("Error on token negotiation")
-        #                 exit("End of program")
-        #             net.send_val(Active.cl.c_list[x].password)
-        #             if net.get_ack() != net.SOCK_ACK:
-        #                 print("Error on root password negotiation")
-        #             net.s.close()
-        #             break
-        #     except NoConnectivity:
-        #         popup = Popup(size_hint=(None, None), size=(300, 150))
-        #         popup.add_widget(Label(text="Unable to connect to host " + host))
-        #         popup.bind(on_press=popup.dismiss)
-        #         popup.title = "No connectivity"
-        #         popup.open()
-        #         return
+        net = Networker()
+        for x in range(0, len(Active.cl.c_list)):
+            try:
+                if Active.cl.c_list[x].name == host:
+                    net.connect_to(host)
+                    net.send_val(Active.cl.c_list[x].token)
+                    if net.get_ack() != net.SOCK_ACK:
+                        print("Error on token negotiation")
+                        exit("End of program")
+                    net.send_val(Active.cl.c_list[x].password)
+                    if net.get_ack() != net.SOCK_ACK:
+                        print("Error on root password negotiation")
+                    net.s.close()
+                    break
+            except NoConnectivity:
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Unable to connect to host " + host))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "No connectivity"
+                popup.open()
+                return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
     def addsrv(self, server, pw, token):
-        # if len(server) < 1:
-        #     popup = Popup(size_hint=(None, None), size=(300, 150))
-        #     popup.add_widget(Label(text="Client name must not be empty"))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = "Client Name Error"
-        #     popup.open()
-        # elif len(pw) < 4:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text="Password must not be empty"))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = "Password Error"
-        #     popup.open()
-        # elif 'KL' not in token or not re.search(r'[0-9]', token):
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text="Invalid token format"))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = "Token Error"
-        #     popup.open()
-        # else:
+        if len(server) < 1:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text="Client name must not be empty"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Client Name Error"
+            popup.open()
+        elif len(pw) < 4:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Password must not be empty"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Password Error"
+            popup.open()
+        elif 'KL' not in token or not re.search(r'[0-9]', token):
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Invalid token format"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Token Error"
+            popup.open()
+        else:
             Active.cl.add_client(Active.cl, Client(token, server, pw))
             self.get_index('Chooser')
             self.load_screen(self.index)
