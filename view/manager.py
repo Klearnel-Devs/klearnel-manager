@@ -21,6 +21,8 @@ from model.QrElem import *
 from model.ScanElem import *
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
+from view.data.modules.scanner import *
+from view.data.modules.quarantine import *
 import re
 
 class ManagerScreen(Screen):
@@ -33,140 +35,6 @@ class ManagerScreen(Screen):
 
 class ListItems(ListItemButton):
     pass
-
-class ScannerViewModal(BoxLayout):
-    data = ListProperty()
-
-    def __init__(self, **kwargs):
-        self.scdata = list()
-        self.orientation = 'vertical'
-        for x in range(0, len(Active.scanList)):
-            self.scdata.append({'path': Active.scanList[x].path,
-                                'options': Active.scanList[x].options})
-        self.list_adapter = ListAdapter(data=self.scdata,
-                                        args_converter=self.formatter,
-                                        cls=QrCompositeListItem,
-                                        selection_mode='single',
-                                        allow_empty_selection=False)
-
-        super(ScannerViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.list_adapter))
-
-    def formatter(self, row_index, scdata):
-        return {'text': scdata['path'],
-                'size_hint_y': None,
-                'height': 50,
-                'cls_dicts': [{'cls': ListItemButton,
-                               'kwargs': {'text': "Path: " + scdata['path'],
-                                          'size_hint_x': 10.0}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['BACKUP'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DEL_F_SIZE'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_F'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['FUSE'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['INTEGRITY'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['CL_TEMP'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DEL_F_OLD'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['BACKUP_OLD'])}}]}
-
-class QrDetailView(GridLayout):
-    qr_name = StringProperty('', allownone=True)
-    obj = None
-
-    def __init__(self, **kwargs):
-        kwargs['cols'] = 2
-        self.qr_name = kwargs.get('qr_name', '')
-        self.obj = kwargs.get('obj', '')
-        print(self.obj)
-        super(QrDetailView, self).__init__(**kwargs)
-        if self.qr_name:
-            self.redraw()
-
-    def redraw(self, *args):
-        self.clear_widgets()
-        if self.qr_name:
-            for x in range(0, len(Active.qrList)):
-                if Active.qrList[x].f_name == self.qr_name:
-                    self.add_widget(Label(text="Filename  :", halign='right'))
-                    self.add_widget(Label(text=self.qr_name))
-                    self.add_widget(Label(text="Old Path  :", halign='right'))
-                    self.add_widget(Label(text=Active.qrList[x].o_path))
-                    self.add_widget(Label(text="Entry Date:", halign='right'))
-                    self.add_widget(Label(text=format(Active.qrList[x].get_begin())))
-                    self.add_widget(Label(text="Expiration:", halign='right'))
-                    self.add_widget(Label(text=format(Active.qrList[x].get_expire())))
-
-    def qr_changed(self, list_adapter, *args):
-        if len(list_adapter.selection) == 0:
-            self.qr_name = None
-        else:
-            selected_object = list_adapter.selection[0]
-
-            if type(selected_object) is str:
-                self.qr_name = selected_object
-            else:
-                self.qr_name = selected_object.text
-
-        self.redraw()
-
-class QrCompositeListItem(CompositeListItem):
-    text = ''
-
-class QuarantineViewModal(BoxLayout):
-    data = ListProperty()
-
-    def __init__(self, **kwargs):
-        self.qrdata = list()
-        for x in range(0, len(Active.qrList)):
-            self.qrdata.append({'filename': Active.qrList[x].f_name,
-                                'old_path': Active.qrList[x].o_path})
-
-        list_item_args_converter = \
-                lambda row_index, selectable: {'text': selectable.name,
-                                               'size_hint_y': None,
-                                               'height': 25}
-
-        self.dict_adapter = ListAdapter(data=self.qrdata,
-                                        args_converter=self.formatter,
-                                        selection_mode='single',
-                                        allow_empty_selection=False,
-                                        cls=QrCompositeListItem)
-
-        super(QuarantineViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.dict_adapter))
-
-        detail_view = QrDetailView(
-            qr_name=self.dict_adapter.selection[0].text,
-            size_hint=(.6, 1.0))
-
-        self.dict_adapter.bind(
-            on_selection_change=detail_view.qr_changed)
-        self.add_widget(detail_view)
-
-    def formatter(self, row_index, qr_data):
-        return {'text': qr_data['filename'],
-                'size_hint_y': None,
-                'height': 50,
-                'cls_dicts': [{'cls': ListItemLabel,
-                               'kwargs': {'text': "Filename:"}},
-                              {'cls': ListItemButton,
-                               'kwargs': {'text': qr_data['filename']}},
-                              {'cls': ListItemLabel,
-                               'kwargs': {'text': "Old Path:"}},
-                              {'cls': ListItemLabel,
-                               'kwargs': {'text': qr_data['old_path']}}]}
-
 
 
 class ListViewModal(BoxLayout):

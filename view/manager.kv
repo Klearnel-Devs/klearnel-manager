@@ -8,6 +8,24 @@
 #            dash_offset: 5
 #            dash_length: 3
 
+<ScButton@ListItemButton>
+    size_hint: None, 1.0
+    font_size: 12
+    size: self.texture_size
+    background_disabled_down: 'atlas://data/images/defaulttheme/button_pressed'
+    disabled: True
+
+
+<ToggleButton>
+    value: ''
+    on_press:
+        print(self.id)
+
+<ScLabel@Label>
+    size_hint: None, 1.0
+    font_size: 12
+    size: self.texture_size
+
 <QuarantineItem@ListItemButton>
 <ScannerItem@ListItemButton>
 
