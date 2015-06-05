@@ -20,6 +20,9 @@ class ScButton(ListItemButton):
 class ScLabel(ListItemLabel):
     pass
 
+class AddScannerElementButton(Button):
+    pass
+
 class ScDetailView(BoxLayout):
     sc_name = StringProperty('', allownone=True)
     obj = None
@@ -43,6 +46,7 @@ class ScDetailView(BoxLayout):
                     box4 = BoxLayout(orientation='horizontal')
                     box5 = BoxLayout(orientation='horizontal')
                     box6 = BoxLayout(orientation='horizontal')
+                    box7 = BoxLayout(orientation='horizontal')
                     box1.add_widget(Label(text="Path:", halign='right'))
                     box1.add_widget(Label(text=self.sc_name))
                     box2.add_widget(Label(text="Broken Symlinks:", halign='right'))
@@ -78,12 +82,21 @@ class ScDetailView(BoxLayout):
                     box6.add_widget(ToggleButton(id='DEL_F_OLD', text="Delete", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_OLD'])
                                                  else 'normal'))
+                    box7.add_widget(AddScannerElementButton())
+                    box7.add_widget(Button(text="Remove From Scanner",
+                                           on_press=lambda a: self.deleteItem(Active.scanList[x])))
                     self.add_widget(box1)
                     self.add_widget(box2)
                     self.add_widget(box3)
                     self.add_widget(box4)
                     self.add_widget(box5)
                     self.add_widget(box6)
+                    self.add_widget(box7)
+                    break
+
+    def deleteItem(self, item):
+        print(str(item))
+    #     TO IMPLEMENT
 
     def sc_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
@@ -127,9 +140,7 @@ class ScannerViewModal(BoxLayout):
         return {'text': scdata['path'],
                 'size_hint_y': None,
                 'height': 50,
-                'cls_dicts': [{'cls': ScLabel,
-                               'kwargs': {'text': "Path: "}},
-                              {'cls': ListItemButton,
+                'cls_dicts': [{'cls': ListItemButton,
                                'kwargs': {'text': scdata['path'],
                                           'size_hint_x': 0.5}},
                               {'cls': ScButton,

@@ -164,14 +164,21 @@ class ManagerApp(App):
         #     try:
         #         if Active.cl.c_list[x].name == host:
         #             net.connect_to(host)
-        #             net.send_val(Active.cl.c_list[x].token)
-        #             if net.get_ack() != net.SOCK_ACK:
-        #                 print("Error on token negotiation")
-        #                 exit("End of program")
-        #             net.send_val(Active.cl.c_list[x].password)
-        #             if net.get_ack() != net.SOCK_ACK:
-        #                 print("Error on root password negotiation")
-        #             net.s.close()
+        #             try:
+        #                 net.send_val(Active.cl.c_list[x].token)
+        #                 if net.get_ack() != net.SOCK_ACK:
+        #                     raise BadCredentials
+        #                 net.send_val(Active.cl.c_list[x].password)
+        #                 if net.get_ack() != net.SOCK_ACK:
+        #                     raise BadCredentials
+        #                 net.s.close()
+        #             except BadCredentials:
+        #                 popup = Popup(size_hint=(None, None), size=(300, 150))
+        #                 popup.add_widget(Label(text="Connection rejected by " + host))
+        #                 popup.bind(on_press=popup.dismiss)
+        #                 popup.title = "Wrong Credentials"
+        #                 popup.open()
+        #                 return
         #             break
         #     except NoConnectivity:
         #         popup = Popup(size_hint=(None, None), size=(300, 150))

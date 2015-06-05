@@ -14,6 +14,13 @@
     size: self.texture_size
     background_disabled_down: 'atlas://data/images/defaulttheme/button_pressed'
     disabled: True
+    disabled_color: (1,1,1,1)
+
+<AddScannerElementButton@Button>
+    text: "Add New Scanner Item"
+    on_press:
+        app.get_index('Chooser')
+        app.load_screen(app.index)
 
 
 <ToggleButton>

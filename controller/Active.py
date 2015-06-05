@@ -15,7 +15,7 @@ def init():
     scan_task = None
     confList = None
     qrList = list()
-    scanList = None
+    scanList = list()
     tasker = None
 
 
