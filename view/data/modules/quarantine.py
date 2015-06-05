@@ -29,9 +29,10 @@ class QrDetailView(GridLayout):
     obj = None
 
     def __init__(self, **kwargs):
-        kwargs['cols'] = 2
+        kwargs['cols'] = 1
         self.qr_name = kwargs.get('qr_name', '')
         super(QrDetailView, self).__init__(**kwargs)
+        self.size_hint_x = 1.0
         if self.qr_name:
             self.redraw()
 
@@ -40,14 +41,27 @@ class QrDetailView(GridLayout):
         if self.qr_name:
             for x in range(0, len(Active.qrList)):
                 if Active.qrList[x].f_name == self.qr_name:
-                    self.add_widget(Label(text="Filename  :", halign='right'))
-                    self.add_widget(Label(text=self.qr_name))
-                    self.add_widget(Label(text="Old Path  :", halign='right'))
-                    self.add_widget(Label(text=Active.qrList[x].o_path))
-                    self.add_widget(Label(text="Entry Date:", halign='right'))
-                    self.add_widget(Label(text=format(Active.qrList[x].get_begin())))
-                    self.add_widget(Label(text="Expiration:", halign='right'))
-                    self.add_widget(Label(text=format(Active.qrList[x].get_expire())))
+                    box1 = BoxLayout(orientation='horizontal')
+                    box2 = BoxLayout(orientation='horizontal')
+                    box3 = BoxLayout(orientation='horizontal')
+                    box4 = BoxLayout(orientation='horizontal')
+                    box1.add_widget(Label(text="Filename  :", halign='right'))
+                    box1.add_widget(Label(text=self.qr_name))
+                    box2.add_widget(Label(text="Old Path  :", halign='right'))
+                    box2.add_widget(Label(text=Active.qrList[x].o_path))
+                    box3.add_widget(Label(text="Entry Date:", halign='right'))
+                    box3.add_widget(Label(text=format(Active.qrList[x].get_begin())))
+                    box3.add_widget(Label(text="Expiration:", halign='right'))
+                    box3.add_widget(Label(text=format(Active.qrList[x].get_expire())))
+                    box4.add_widget(Button(text="Restore From Quarantine",
+                                           on_press=lambda a: self.restoreItem(Active.qrList[x])))
+                    box4.add_widget(Button(text="Permanently Delete",
+                                           on_press=lambda a: self.deleteItem(Active.qrList[x])))
+                    self.add_widget(box1)
+                    self.add_widget(box2)
+                    self.add_widget(box3)
+                    self.add_widget(box4)
+                    break
 
     def qr_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
@@ -61,6 +75,12 @@ class QrDetailView(GridLayout):
                 self.qr_name = selected_object.text
 
         self.redraw()
+
+    def restoreItem(self, item):
+        print(str(item))
+
+    def deleteItem(self, item):
+        print(str(item))
 
 class QuarantineViewModal(BoxLayout):
     data = ListProperty()
@@ -92,9 +112,7 @@ class QuarantineViewModal(BoxLayout):
         return {'text': qr_data['filename'],
                 'size_hint_y': None,
                 'height': 50,
-                'cls_dicts': [{'cls': ListItemLabel,
-                               'kwargs': {'text': "Filename:"}},
-                              {'cls': ListItemButton,
+                'cls_dicts': [{'cls': ListItemButton,
                                'kwargs': {'text': qr_data['filename']}},
                               {'cls': ListItemLabel,
                                'kwargs': {'text': "Old Path:"}},

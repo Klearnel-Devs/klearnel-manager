@@ -46,7 +46,6 @@ class ScDetailView(BoxLayout):
                     box4 = BoxLayout(orientation='horizontal')
                     box5 = BoxLayout(orientation='horizontal')
                     box6 = BoxLayout(orientation='horizontal')
-                    box7 = BoxLayout(orientation='horizontal')
                     box1.add_widget(Label(text="Path:", halign='right'))
                     box1.add_widget(Label(text=self.sc_name))
                     box2.add_widget(Label(text="Broken Symlinks:", halign='right'))
@@ -82,16 +81,14 @@ class ScDetailView(BoxLayout):
                     box6.add_widget(ToggleButton(id='DEL_F_OLD', text="Delete", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_OLD'])
                                                  else 'normal'))
-                    box7.add_widget(AddScannerElementButton())
-                    box7.add_widget(Button(text="Remove From Scanner",
-                                           on_press=lambda a: self.deleteItem(Active.scanList[x])))
                     self.add_widget(box1)
                     self.add_widget(box2)
                     self.add_widget(box3)
                     self.add_widget(box4)
                     self.add_widget(box5)
                     self.add_widget(box6)
-                    self.add_widget(box7)
+                    self.add_widget(Button(text="Remove From Scanner",
+                                           on_press=lambda a: self.deleteItem(Active.scanList[x])))
                     break
 
     def deleteItem(self, item):
