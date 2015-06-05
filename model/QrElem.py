@@ -25,7 +25,9 @@ def qr_temp_create1():
     qr_e = QrElem("report.txt")
     qr_e.o_path = "/home/nuccah/template/report.txt"
     qr_e.d_begin = int(time())
-    qr_e.d_expire = int(time()) + timedelta(days=30).seconds
+    qr_e.d_expire = int(time()) + (60*60*30*24)
+    print(qr_e.d_begin)
+    print(qr_e.d_expire)
     return qr_e
 
 def qr_temp_create2():
