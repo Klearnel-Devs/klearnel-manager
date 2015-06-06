@@ -74,7 +74,8 @@ class ScDetailView(BoxLayout):
                     box5.add_widget(ToggleButton(id='DEL_F_SIZE', text="Delete", halign='right', group="sizeFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_SIZE'])
                                                  else 'normal'))
-                    box6.add_widget(Label(text="Files Older than X Time:", halign='right'))
+                    box6.add_widget(Label(text="Files Older than " + str(Active.scanList[x].max_age) + " days:",
+                                          halign='right'))
                     box6.add_widget(ToggleButton(id='BACKUP_OLD', text="Backup", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['BACKUP_OLD'])
                                                  else 'normal'))

@@ -66,6 +66,7 @@ class ManagerApp(App):
     screen_names = ListProperty([])
     hierarchy = ListProperty([])
     user_db = "../user.db"
+    client = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -182,6 +183,7 @@ class ManagerApp(App):
         #                 popup.title = "Wrong Credentials"
         #                 popup.open()
         #                 return
+        #             self.client = Active.cl.c_list[x]
         #             break
         #     except NoConnectivity:
         #         popup = Popup(size_hint=(None, None), size=(300, 150))
@@ -274,6 +276,29 @@ class ManagerApp(App):
         #     return
         Active.scanList.append(tmp)
         self.get_index("Scanner")
+        self.load_screen(self.index)
+
+    def addQR(self, filename):
+        try:
+            if not filename or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
+                raise EmptyFields
+        except EmptyFields:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Incorrect format for filename"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Input Error"
+            popup.open()
+            return
+        # try:
+        #     Active.qr_task.add_to_qr(self.client, filename)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = "QR Tasker"
+        #     popup.open()
+        #     return
+        self.get_index("Quarantine")
         self.load_screen(self.index)
 
 if __name__ == '__main__':
