@@ -170,14 +170,14 @@ class ManagerApp(App):
         #             try:
         #                 net.send_val(Active.cl.c_list[x].token)
         #                 if net.get_ack() != net.SOCK_ACK:
-        #                     raise BadCredentials
+        #                     raise BadCredentials("Connection rejected by " + host)
         #                 net.send_val(Active.cl.c_list[x].password)
         #                 if net.get_ack() != net.SOCK_ACK:
-        #                     raise BadCredentials
+        #                     raise BadCredentials("Connection rejected by " + host)
         #                 net.s.close()
-        #             except BadCredentials:
+        #             except BadCredentials as bc:
         #                 popup = Popup(size_hint=(None, None), size=(300, 150))
-        #                 popup.add_widget(Label(text="Connection rejected by " + host))
+        #                 popup.add_widget(Label(text=bc.value))
         #                 popup.bind(on_press=popup.dismiss)
         #                 popup.title = "Wrong Credentials"
         #                 popup.open()
@@ -243,14 +243,14 @@ class ManagerApp(App):
     def addscan(self, path, is_temp, size, age, *args):
         try:
             if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
-                raise EmptyFields
+                raise EmptyFields("Text fields empty or incorrect format")
             if not age or not re.search(r'^[0-9]+$', age):
-                raise EmptyFields
+                raise EmptyFields("Text fields empty or incorrect format")
             if not size or not re.search(r'^[0-9]+$', size):
-                raise EmptyFields
-        except EmptyFields:
+                raise EmptyFields("Text fields empty or incorrect format")
+        except EmptyFields as ef:
             popup = Popup(size_hint=(None, None), size=(400, 150))
-            popup.add_widget(Label(text="Text fields empty or incorrect format"))
+            popup.add_widget(Label(text=ef.value))
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
@@ -279,11 +279,11 @@ class ManagerApp(App):
 
     def addQR(self, filename):
         try:
-            if not filename or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
-                raise EmptyFields
-        except EmptyFields:
+            if not filename or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', filename):
+                raise EmptyFields("Incorrect format for filename")
+        except EmptyFields as ef:
             popup = Popup(size_hint=(None, None), size=(400, 150))
-            popup.add_widget(Label(text="Incorrect format for filename"))
+            popup.add_widget(Label(text=ef.value))
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
