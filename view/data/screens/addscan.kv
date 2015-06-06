@@ -1,0 +1,118 @@
+ManagerScreen:
+    name: 'Add Scanner Item'
+    fullscreen: True
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 20
+        Image:
+            source: '../view/data/resources/klearnel.png'
+        Label:
+            text: 'Add New Scanner Item'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Path'
+                size_hint_x: None
+                width: root.width/3
+            TextInput:
+                id: path
+                multiline: False
+                write_tab: False
+                focus: True
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Broken Symlinks'
+            ToggleButton:
+                id: BR_S
+                text: 'Delete'
+            Label:
+                text: 'Duplicate Symlinks'
+            ToggleButton:
+                id: DUP_S
+                text: 'Delete'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Duplicate Files'
+            ToggleButton:
+                id: DUP_F
+                text: 'Delete'
+            Label:
+                text: 'Permissions Integrity'
+            ToggleButton:
+                id: INTEGRITY
+                text: 'Fix'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Is Temporary Folder'
+            ToggleButton:
+                id: is_temp
+                text: 'Yes'
+            Label:
+                text: 'Temp Folders'
+            ToggleButton:
+                id: CL_TEMP
+                text: 'Clean'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Files Larger than X Size'
+            ToggleButton:
+                id: BACKUP
+                text: 'Backup'
+                group: 'xsize'
+            ToggleButton:
+                id: DEL_F_SIZE
+                text: 'Delete'
+                group: 'xsize'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Files Older than X Time'
+            ToggleButton:
+                id: BACKUP_OLD
+                text: 'Backup'
+                group: 'oldfiles'
+            ToggleButton:
+                id: DEL_F_OLD
+                text: 'Delete'
+                group: 'oldfiles'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Go Back'
+                on_press:
+                    app.get_index('Scanner')
+                    app.load_screen(app.index)
+            Button:
+                text: 'Reset'
+                on_press:
+                    DEL_F_OLD.state = 'normal'
+                    BACKUP_OLD.state = 'normal'
+                    DEL_F_SIZE.state = 'normal'
+                    BACKUP.state = 'normal'
+                    CL_TEMP.state = 'normal'
+                    is_temp.state = 'normal'
+                    INTEGRITY.state = 'normal'
+                    DUP_F.state = 'normal'
+                    DUP_S.state = 'normal'
+                    BR_S.state = 'normal'
+                    path.text =  ''
+            Button:
+                text: 'Add to Scanner'

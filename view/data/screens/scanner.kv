@@ -45,3 +45,6 @@ ManagerScreen:
             text: 'Add Scanner Item'
             size_hint_y: None
             size: (root.width, root.height/20)
+            on_press:
+                app.get_index('addscan')
+                app.load_screen(app.index)

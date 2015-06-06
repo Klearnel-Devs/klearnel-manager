@@ -79,7 +79,7 @@ class ManagerApp(App):
         self.title = 'Klearnel Manager'
         self.available_screens = ([
             'Creation', 'Login', 'Chooser', 'Scanner', 'Quarantine',
-            'Settings', 'AddServ'])
+            'Settings', 'AddServ', 'addscan'])
         self.screen_names = ['Scanner', 'Quarantine', 'Settings']
         curdir = "../view/"
         self.available_screens = [join(curdir, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
