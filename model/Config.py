@@ -1,6 +1,4 @@
 __author__ = 'Derek'
-from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
-    ListProperty
 
 class Config:
     gbl = dict(log_age=30, small=1, medium=10, large=100)

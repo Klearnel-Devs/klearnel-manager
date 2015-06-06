@@ -19,7 +19,11 @@ from controller import Active
 from model.Config import Config
 from model.QrElem import *
 from model.ScanElem import *
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
+from view.data.modules.scanner import *
+
+from view.data.modules.quarantine import *
 import re
 
 class ManagerScreen(Screen):
@@ -32,80 +36,6 @@ class ManagerScreen(Screen):
 
 class ListItems(ListItemButton):
     pass
-
-class ScannerViewModal(BoxLayout):
-    data = ListProperty()
-
-    def __init__(self, **kwargs):
-        self.scdata = list()
-        self.orientation = 'vertical'
-        for x in range(0, len(Active.scanList)):
-            self.scdata.append({'path': Active.scanList[x].path,
-                                'options': Active.scanList[x].options})
-        self.list_adapter = ListAdapter(data=self.scdata,
-                                        args_converter=self.formatter,
-                                        cls=CompositeListItem,
-                                        selection_mode='single',
-                                        allow_empty_selection=False)
-
-        super(ScannerViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.list_adapter))
-
-    def formatter(self, row_index, scdata):
-        return {'text': scdata['path'],
-                'size_hint_y': None,
-                'height': 50,
-                'cls_dicts': [{'cls': ListItemButton,
-                               'kwargs': {'text': "Path: " + scdata['path'],
-                                          'size_hint_x': 10.0}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_S'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['BACKUP'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DEL_F_SIZE'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DUP_F'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['FUSE'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['INTEGRITY'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['CL_TEMP'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['DEL_F_OLD'])}},
-                              {'cls': CheckBox,
-                               'kwargs': {'active': bool(scdata['options']['BACKUP_OLD'])}}]}
-
-
-class QuarantineViewModal(BoxLayout):
-    data = ListProperty()
-
-    def __init__(self, **kwargs):
-        self.qrdata = list()
-        for x in range(0, len(Active.qrList)):
-            self.qrdata.append({'filename': Active.qrList[x].f_name,
-                                'old_path': Active.qrList[x].o_path})
-
-        self.dict_adapter = ListAdapter(data=self.qrdata,
-                                        args_converter=self.formatter,
-                                        selection_mode='multiple',
-                                        allow_empty_selection=False,
-                                        cls=CompositeListItem)
-
-        super(QuarantineViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.dict_adapter))
-
-    def formatter(self, row_index, qr_data):
-        return {'text': qr_data['filename'],
-                'size_hint_y': None,
-                'height': 50,
-                'cls_dicts': [{'cls': ListItemButton,
-                               'kwargs': {'text': "Filename: " + qr_data['filename']}},
-                              {'cls': ListItemLabel,
-                               'kwargs': {'text': "Old Path: " + qr_data['old_path']}}]}
 
 
 class ListViewModal(BoxLayout):
@@ -145,12 +75,14 @@ class ManagerApp(App):
         Active.confList = Config
         Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
         Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
+        Active.scan_task = TaskScan()
+        Active.quar_task = TaskQR()
 
     def build(self):
         self.title = 'Klearnel Manager'
         self.available_screens = ([
             'Creation', 'Login', 'Chooser', 'Scanner', 'Quarantine',
-            'Settings', 'AddServ'])
+            'Settings', 'AddServ', 'addscan', 'addquar'])
         self.screen_names = ['Scanner', 'Quarantine', 'Settings']
         curdir = "../view/"
         self.available_screens = [join(curdir, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
@@ -230,27 +162,35 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        net = Networker()
-        for x in range(0, len(Active.cl.c_list)):
-            try:
-                if Active.cl.c_list[x].name == host:
-                    net.connect_to(host)
-                    net.send_val(Active.cl.c_list[x].token)
-                    if net.get_ack() != net.SOCK_ACK:
-                        print("Error on token negotiation")
-                        exit("End of program")
-                    net.send_val(Active.cl.c_list[x].password)
-                    if net.get_ack() != net.SOCK_ACK:
-                        print("Error on root password negotiation")
-                    net.s.close()
-                    break
-            except NoConnectivity:
-                popup = Popup(size_hint=(None, None), size=(300, 150))
-                popup.add_widget(Label(text="Unable to connect to host " + host))
-                popup.bind(on_press=popup.dismiss)
-                popup.title = "No connectivity"
-                popup.open()
-                return
+        # net = Networker()
+        # for x in range(0, len(Active.cl.c_list)):
+        #     try:
+        #         if Active.cl.c_list[x].name == host:
+        #             net.connect_to(host)
+        #             try:
+        #                 net.send_val(Active.cl.c_list[x].token)
+        #                 if net.get_ack() != net.SOCK_ACK:
+        #                     raise BadCredentials("Connection rejected by " + host)
+        #                 net.send_val(Active.cl.c_list[x].password)
+        #                 if net.get_ack() != net.SOCK_ACK:
+        #                     raise BadCredentials("Connection rejected by " + host)
+        #                 net.s.close()
+        #             except BadCredentials as bc:
+        #                 popup = Popup(size_hint=(None, None), size=(300, 150))
+        #                 popup.add_widget(Label(text=bc.value))
+        #                 popup.bind(on_press=popup.dismiss)
+        #                 popup.title = "Wrong Credentials"
+        #                 popup.open()
+        #                 return
+        #             Active.client = Active.cl.c_list[x]
+        #             break
+        #     except NoConnectivity:
+        #         popup = Popup(size_hint=(None, None), size=(300, 150))
+        #         popup.add_widget(Label(text="Unable to connect to host " + host))
+        #         popup.bind(on_press=popup.dismiss)
+        #         popup.title = "No connectivity"
+        #         popup.open()
+        #         return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -299,6 +239,66 @@ class ManagerApp(App):
 
     def getConf(self, section, entry):
         return Active.confList.get_value(Active.confList, section, entry)
+
+    def addscan(self, path, is_temp, size, age, *args):
+        try:
+            if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
+                raise EmptyFields("Text fields empty or incorrect format")
+            if not age or not re.search(r'^[0-9]+$', age):
+                raise EmptyFields("Text fields empty or incorrect format")
+            if not size or not re.search(r'^[0-9]+$', size):
+                raise EmptyFields("Text fields empty or incorrect format")
+        except EmptyFields as ef:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=ef.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Input Error"
+            popup.open()
+            return
+        tmp = ScanElem(path)
+        tmp.is_temp = 0 if is_temp is 'normal' else 1
+        opt = ''
+        for arg in args:
+            opt += '0' if arg is 'normal' else '1'
+        tmp.set_options(opt)
+        tmp.back_limit_size = float(size) if tmp.options['BACKUP'] is '1' else None
+        tmp.del_limit_size = float(size) if tmp.options['DEL_F_SIZE'] is '1' else None
+        tmp.max_age = age
+        # try:
+        #     Active.scan_task.add_to_scan(Active.client, tmp)
+        # except ScanException as se:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=se.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = se.title
+        #     popup.open()
+        #     return
+        Active.scanList.append(tmp)
+        self.get_index("Scanner")
+        self.load_screen(self.index)
+
+    def addQR(self, filename):
+        try:
+            if not filename or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', filename):
+                raise EmptyFields("Incorrect format for filename")
+        except EmptyFields as ef:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=ef.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Input Error"
+            popup.open()
+            return
+        # try:
+        #     Active.qr_task.add_to_qr(Active.client, filename)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = qr.title
+        #     popup.open()
+        #     return
+        self.get_index("Quarantine")
+        self.load_screen(self.index)
 
 if __name__ == '__main__':
     ManagerApp().run()

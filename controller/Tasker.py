@@ -3,6 +3,7 @@ from controller.Networker import Networker
 from model.Client import ClientList
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
+from model.Exceptions import ScanException, QrException
 
 KL_EXIT = -1
 QR_ADD = 1
@@ -49,7 +50,7 @@ class TaskScan(Tasker):
         try:
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
-            net.send_val(new_elem.options)
+            net.send_val(new_elem.get_options())
             net.send_val(str(len(new_elem.back_limit_size)))
             net.send_val(new_elem.back_limit_size)
             net.send_val(str(len(new_elem.del_limit_size)))
@@ -58,9 +59,9 @@ class TaskScan(Tasker):
             net.send_val(str(len(new_elem.max_age)))
             net.send_val(new_elem.max_age)
         except ConnectionError:
+            raise ScanException("Unable to add " + new_elem.path + " to scanner on " + client.name)
+        finally:
             net.s.close()
-            raise Exception("Unable to add " + new_elem.path + " to scanner on " + client.name)
-        net.s.close()
 
     def rm_from_scan(self, client, path):
         net = Networker()
@@ -70,9 +71,9 @@ class TaskScan(Tasker):
             net.send_val(str(SCAN_RM) + ":" + str(len(path)))
             net.send_val(path)
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to remove " + path + " from scanner on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
     def get_scan_list(self, client):
         net = Networker()
@@ -126,9 +127,9 @@ class TaskScan(Tasker):
                 i += 1
 
         except ConnectionError:
+            raise ScanException("Unable to get list from scanner on " + client.name)
+        finally:
             net.s.close()
-            raise Exception("Unable to get list from scanner on " + client.name)
-        net.s.close()
         return scan_list
 
 
@@ -141,9 +142,10 @@ class TaskQR(Tasker):
             net.send_val(str(QR_ADD) + ":" + str(len(path)))
             net.send_val(path)
         except ConnectionError:
+            # net.s.close()
+            raise QrException("Unable to add " + path + " to quarantine on " + client.name)
+        finally:
             net.s.close()
-            raise Exception("Unable to add " + path + " to quarantine on " + client.name)
-        net.s.close()
 
     def rm_from_qr(self, client, filename):
         net = Networker()
@@ -153,9 +155,9 @@ class TaskQR(Tasker):
             net.send_val(str(QR_RM) + ":" + str(len(filename)))
             net.send_val(filename)
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to remove " + filename + " from quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
     def restore_from_qr(self, client, filename):
         net = Networker()
@@ -165,9 +167,9 @@ class TaskQR(Tasker):
             net.send_val(str(QR_REST) + ":" + str(len(filename)))
             net.send_val(filename)
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to restore " + filename + " from quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
     def get_qr_list(self, client):
         net = Networker()
@@ -209,9 +211,9 @@ class TaskQR(Tasker):
                 i += 1
 
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to get list from quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
         return qr_list
 
@@ -225,9 +227,9 @@ class TaskQR(Tasker):
         try:
             net.send_val(str(QR_RM_ALL) + ":0")
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to remove all elements in the quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
     def restore_all_from_qr(self, client):
         net = Networker()
@@ -236,10 +238,17 @@ class TaskQR(Tasker):
         try:
             net.send_val(str(QR_REST_ALL) + ":0")
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to restore all elements from the quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.close()
 
+
+class TaskConfig(Tasker):
+    def get_config(self, client):
+        pass
+
+    def send_conf_mod(self, client, section, key, new_value):
+        pass
 
 if __name__ == "__main__":
     cl = ClientList()
