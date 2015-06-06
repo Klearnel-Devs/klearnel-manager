@@ -87,6 +87,17 @@ class QuarantineViewModal(BoxLayout):
 
     def __init__(self, **kwargs):
         self.qrdata = list()
+        # FOR NETWORK
+        # Active.qrList.clear()
+        # try:
+        #     Active.qrList = Active.qr_task.get_qr_list(Active.client)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = qr.title
+        #     popup.open()
+        #     return
         for x in range(0, len(Active.qrList)):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})

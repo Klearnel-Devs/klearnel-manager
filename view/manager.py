@@ -66,7 +66,6 @@ class ManagerApp(App):
     screen_names = ListProperty([])
     hierarchy = ListProperty([])
     user_db = "../user.db"
-    client = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -183,7 +182,7 @@ class ManagerApp(App):
         #                 popup.title = "Wrong Credentials"
         #                 popup.open()
         #                 return
-        #             self.client = Active.cl.c_list[x]
+        #             Active.client = Active.cl.c_list[x]
         #             break
         #     except NoConnectivity:
         #         popup = Popup(size_hint=(None, None), size=(300, 150))
@@ -266,12 +265,12 @@ class ManagerApp(App):
         tmp.del_limit_size = float(size) if tmp.options['DEL_F_SIZE'] is '1' else None
         tmp.max_age = age
         # try:
-        #     Active.scan_task.add_to_scan(tmp)
+        #     Active.scan_task.add_to_scan(Active.client, tmp)
         # except ScanException as se:
         #     popup = Popup(size_hint=(None, None), size=(400, 150))
         #     popup.add_widget(Label(text=se.value))
         #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = "Scan Tasker"
+        #     popup.title = se.title
         #     popup.open()
         #     return
         Active.scanList.append(tmp)
@@ -290,12 +289,12 @@ class ManagerApp(App):
             popup.open()
             return
         # try:
-        #     Active.qr_task.add_to_qr(self.client, filename)
+        #     Active.qr_task.add_to_qr(Active.client, filename)
         # except QrException as qr:
         #     popup = Popup(size_hint=(None, None), size=(400, 150))
         #     popup.add_widget(Label(text=qr.value))
         #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = "QR Tasker"
+        #     popup.title = qr.title
         #     popup.open()
         #     return
         self.get_index("Quarantine")

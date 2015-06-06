@@ -127,7 +127,7 @@ class TaskScan(Tasker):
                 i += 1
 
         except ConnectionError:
-            raise Exception("Unable to get list from scanner on " + client.name)
+            raise ScanException("Unable to get list from scanner on " + client.name)
         finally:
             net.s.close()
         return scan_list

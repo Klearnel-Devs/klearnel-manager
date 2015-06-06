@@ -9,6 +9,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.button import Button, ButtonBehavior
 from kivy.uix.togglebutton import ToggleButton
+from model.Exceptions import ScanException
+from kivy.uix.popup import Popup
 
 class ScCompositeListItem(CompositeListItem):
     text = ''
@@ -115,6 +117,17 @@ class ScannerViewModal(BoxLayout):
     def __init__(self, **kwargs):
         self.scdata = list()
         self.orientation = 'vertical'
+        # FOR NETWORK
+        # Active.scanList.clear()
+        # try:
+        #     Active.scanList = Active.scan_task.get_scan_list(Active.client)
+        # except ScanException as se:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=se.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = se.title
+        #     popup.open()
+        #     return
         for x in range(0, len(Active.scanList)):
             self.scdata.append({'path': Active.scanList[x].path,
                                 'options': Active.scanList[x].options})

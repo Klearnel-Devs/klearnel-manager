@@ -22,6 +22,8 @@ class EmptyFields(Exception):
         return repr(self.value)
 
 class ScanException(Exception):
+    title = 'Scanner Error'
+
     def __init__(self, value):
         self.value = value
 
@@ -29,6 +31,8 @@ class ScanException(Exception):
         return repr(self.value)
 
 class QrException(Exception):
+    title = 'Quarantine Error'
+
     def __init__(self, value):
         self.value = value
 
