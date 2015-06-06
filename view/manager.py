@@ -22,6 +22,7 @@ from model.ScanElem import *
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from view.data.modules.scanner import *
+
 from view.data.modules.quarantine import *
 import re
 
@@ -74,6 +75,8 @@ class ManagerApp(App):
         Active.confList = Config
         Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
         Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
+        Active.scan_task = TaskScan()
+        Active.quar_task = TaskQR()
 
     def build(self):
         self.title = 'Klearnel Manager'
@@ -235,6 +238,43 @@ class ManagerApp(App):
 
     def getConf(self, section, entry):
         return Active.confList.get_value(Active.confList, section, entry)
+
+    def addscan(self, path, is_temp, size, age, *args):
+        try:
+            if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
+                raise EmptyFields
+            if not age or not re.search(r'^[0-9]+$', age):
+                raise EmptyFields
+            if not size or not re.search(r'^[0-9]+$', size):
+                raise EmptyFields
+        except EmptyFields:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Text fields empty or incorrect format"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Input Error"
+            popup.open()
+            return
+        tmp = ScanElem(path)
+        tmp.is_temp = 0 if is_temp is 'normal' else 1
+        opt = ''
+        for arg in args:
+            opt += '0' if arg is 'normal' else '1'
+        tmp.set_options(opt)
+        tmp.back_limit_size = float(size) if tmp.options['BACKUP'] is '1' else None
+        tmp.del_limit_size = float(size) if tmp.options['DEL_F_SIZE'] is '1' else None
+        tmp.max_age = age
+        # try:
+        #     Active.scan_task.add_to_scan(tmp)
+        # except ScanException as se:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=se.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = "Scan Tasker"
+        #     popup.open()
+        #     return
+        Active.scanList.append(tmp)
+        self.get_index("Scanner")
+        self.load_screen(self.index)
 
 if __name__ == '__main__':
     ManagerApp().run()

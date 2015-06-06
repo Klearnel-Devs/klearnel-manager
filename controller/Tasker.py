@@ -3,6 +3,7 @@ from controller.Networker import Networker
 from model.Client import ClientList
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
+from model.Exceptions import ScanException
 
 KL_EXIT = -1
 QR_ADD = 1
@@ -49,7 +50,7 @@ class TaskScan(Tasker):
         try:
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
-            net.send_val(new_elem.options)
+            net.send_val(new_elem.get_options())
             net.send_val(str(len(new_elem.back_limit_size)))
             net.send_val(new_elem.back_limit_size)
             net.send_val(str(len(new_elem.del_limit_size)))
@@ -59,7 +60,7 @@ class TaskScan(Tasker):
             net.send_val(new_elem.max_age)
         except ConnectionError:
             net.s.close()
-            raise Exception("Unable to add " + new_elem.path + " to scanner on " + client.name)
+            raise ScanException("Unable to add " + new_elem.path + " to scanner on " + client.name)
         net.s.close()
 
     def rm_from_scan(self, client, path):
@@ -70,7 +71,7 @@ class TaskScan(Tasker):
             net.send_val(str(SCAN_RM) + ":" + str(len(path)))
             net.send_val(path)
         except ConnectionError:
-            net.s.close()
+            # net.s.close()
             raise Exception("Unable to remove " + path + " from scanner on " + client.name)
         net.s.close()
 

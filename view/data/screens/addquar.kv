@@ -21,6 +21,8 @@ ManagerScreen:
                 multiline: False
                 write_tab: False
                 focus: True
+                on_text_validate:
+                    app.addQR(path.text)
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -36,3 +38,5 @@ ManagerScreen:
                     path.text =  ''
             Button:
                 text: 'Add to Quarantine'
+                on_press:
+                    app.addQR(path.text)

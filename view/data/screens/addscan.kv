@@ -77,6 +77,9 @@ ManagerScreen:
                 id: DEL_F_SIZE
                 text: 'Delete'
                 group: 'xsize'
+            TextInput:
+                id: Size
+                text: 'Size in MB'
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -91,6 +94,9 @@ ManagerScreen:
                 id: DEL_F_OLD
                 text: 'Delete'
                 group: 'oldfiles'
+            TextInput:
+                id: Age
+                text: 'Age in days'
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -116,3 +122,6 @@ ManagerScreen:
                     path.text =  ''
             Button:
                 text: 'Add to Scanner'
+                on_press:
+                    app.addscan(path.text, is_temp.state, Size.text, Age.text, BR_S.state, DUP_S.state, BACKUP.state,
+                    DEL_F_SIZE.state, DUP_F.state, INTEGRITY.state, CL_TEMP.state, DEL_F_OLD.state, BACKUP_OLD.state)
