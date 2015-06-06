@@ -3,5 +3,36 @@ ManagerScreen:
     fullscreen: True
     BoxLayout:
         orientation: 'vertical'
+        spacing: 20
         Image:
             source: '../view/data/resources/klearnel.png'
+        Label:
+            text: 'Add New Quarantine File'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Label:
+                text: 'Path'
+                size_hint_x: None
+                width: root.width/3
+            TextInput:
+                id: path
+                multiline: False
+                write_tab: False
+                focus: True
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Go Back'
+                on_press:
+                    app.get_index('Quarantine')
+                    app.load_screen(app.index)
+            Button:
+                text: 'Reset'
+                on_press:
+                    path.text =  ''
+            Button:
+                text: 'Add to Quarantine'

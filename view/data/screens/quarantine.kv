@@ -42,3 +42,6 @@ ManagerScreen:
             text: 'Add File to Quarantine'
             size_hint_y: None
             size: (root.width, root.height/20)
+            on_press:
+                app.get_index('addquar')
+                app.load_screen(app.index)
