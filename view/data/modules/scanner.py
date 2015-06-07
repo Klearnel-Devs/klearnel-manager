@@ -11,6 +11,7 @@ from kivy.uix.button import Button, ButtonBehavior
 from kivy.uix.togglebutton import ToggleButton
 from model.Exceptions import ScanException
 from kivy.uix.popup import Popup
+from kivy.clock import Clock
 
 class ScCompositeListItem(CompositeListItem):
     text = ''
@@ -91,12 +92,20 @@ class ScDetailView(BoxLayout):
                     self.add_widget(box5)
                     self.add_widget(box6)
                     self.add_widget(Button(text="Remove From Scanner",
-                                           on_press=lambda a: self.deleteItem(Active.scanList[x])))
+                                           on_press=lambda a: self.deleteItem(Active.scanList[x], x)))
                     break
 
-    def deleteItem(self, item):
-        print(str(item))
-    #     TO IMPLEMENT
+    def deleteItem(self, item, index):
+        # try:
+        #     Active.scan_task.rm_from_scan(Active.client, item.path)
+        # except ScanException as se:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=se.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = se.title
+        #     popup.open()
+        #     return
+        Active.scanList.pop(index)
 
     def sc_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
@@ -108,7 +117,6 @@ class ScDetailView(BoxLayout):
                 self.sc_name = selected_object
             else:
                 self.sc_name = selected_object.text
-
         self.redraw()
 
 class ScannerViewModal(BoxLayout):
@@ -139,13 +147,33 @@ class ScannerViewModal(BoxLayout):
                                         allow_empty_selection=False)
 
         super(ScannerViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.list_adapter))
+        self.list_view = ListView(adapter=self.list_adapter)
+        self.add_widget(self.list_view)
 
         detail_view = ScDetailView(sc_name=self.list_adapter.selection[0].text, size_hint=(.6, 1.0))
 
         self.list_adapter.bind(
             on_selection_change=detail_view.sc_changed)
         self.add_widget(detail_view)
+        Clock.schedule_interval(self.callback, 5)
+
+    def callback(self, dt):
+        # try:
+        #     Active.scanList = Active.scan_task.get_scan_list(Active.client)
+        # except ScanException as se:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=se.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = se.title
+        #     popup.open()
+        #     return
+        self.scdata.clear()
+        for x in range(0, len(Active.scanList)):
+            self.scdata.append({'path': Active.scanList[x].path,
+                              'options': Active.scanList[x].options})
+        self.list_adapter.data = self.scdata
+        if hasattr(self.list_view, '_reset_spopulate'):
+            self.list_view._reset_spopulate()
 
     def formatter(self, rowindex, scdata):
         return {'text': scdata['path'],
@@ -181,4 +209,7 @@ class ScannerViewModal(BoxLayout):
                               {'cls': ScButton,
                                'kwargs': {'text' : 'BACKUP_OLD',
                                           'state': 'down' if bool(scdata['options']['BACKUP_OLD']) else 'normal'}}]}
+
+    def print(self):
+        print("hello")
 

@@ -20,6 +20,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from view.data.modules.scanner import *
 from view.data.modules.quarantine import *
+from model.Exceptions import QrException
 
 class QrCompositeListItem(CompositeListItem):
     text = ''
@@ -56,7 +57,7 @@ class QrDetailView(GridLayout):
                     box4.add_widget(Button(text="Restore From Quarantine",
                                            on_press=lambda a: self.restoreItem(Active.qrList[x])))
                     box4.add_widget(Button(text="Permanently Delete",
-                                           on_press=lambda a: self.deleteItem(Active.qrList[x])))
+                                           on_press=lambda a: self.deleteItem(Active.qrList[x], x)))
                     self.add_widget(box1)
                     self.add_widget(box2)
                     self.add_widget(box3)
@@ -79,8 +80,17 @@ class QrDetailView(GridLayout):
     def restoreItem(self, item):
         print(str(item))
 
-    def deleteItem(self, item):
-        print(str(item))
+    def deleteItem(self, item, index):
+        # try:
+        #     Active.qr_task.rm_from_qr(Active.client, item.f_name)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = qr.title
+        #     popup.open()
+        #     return
+        Active.qrList.pop(index)
 
 class QuarantineViewModal(BoxLayout):
     data = ListProperty()
@@ -102,22 +112,42 @@ class QuarantineViewModal(BoxLayout):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})
 
-        self.dict_adapter = ListAdapter(data=self.qrdata,
+        self.list_adapter = ListAdapter(data=self.qrdata,
                                         args_converter=self.formatter,
                                         selection_mode='single',
                                         allow_empty_selection=False,
                                         cls=QrCompositeListItem)
 
         super(QuarantineViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.dict_adapter))
+        self.list_view = ListView(adapter=self.list_adapter)
+        self.add_widget(self.list_view)
 
         detail_view = QrDetailView(
-            qr_name=self.dict_adapter.selection[0].text,
+            qr_name=self.list_adapter.selection[0].text,
             size_hint=(.6, 1.0))
 
-        self.dict_adapter.bind(
+        self.list_adapter.bind(
             on_selection_change=detail_view.qr_changed)
         self.add_widget(detail_view)
+        Clock.schedule_interval(self.callback, 5)
+
+    def callback(self, dt):
+        # try:
+        #     Active.qrList = Active.qr_task.get_qr_list(Active.client)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = qr.title
+        #     popup.open()
+        #     return
+        self.qrdata.clear()
+        for x in range(0, len(Active.qrList)):
+                self.qrdata.append({'filename': Active.qrList[x].f_name,
+                                  'old_path': Active.qrList[x].o_path})
+        self.list_adapter.data = self.qrdata
+        if hasattr(self.list_view, '_reset_spopulate'):
+            self.list_view._reset_spopulate()
 
     def formatter(self, rowindex, qr_data):
         return {'text': qr_data['filename'],

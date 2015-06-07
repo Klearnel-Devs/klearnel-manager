@@ -76,7 +76,7 @@ class ManagerApp(App):
         Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
         Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
         Active.scan_task = TaskScan()
-        Active.quar_task = TaskQR()
+        Active.qr_task = TaskQR()
 
     def build(self):
         self.title = 'Klearnel Manager'
@@ -273,7 +273,6 @@ class ManagerApp(App):
         #     popup.title = se.title
         #     popup.open()
         #     return
-        Active.scanList.append(tmp)
         self.get_index("Scanner")
         self.load_screen(self.index)
 
