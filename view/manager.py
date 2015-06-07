@@ -299,5 +299,28 @@ class ManagerApp(App):
         self.get_index("Quarantine")
         self.load_screen(self.index)
 
+    def mod_sc(self, btn, path, id, state):
+        for x in range(0, len(Active.scanList)):
+            if path is Active.scanList[x].path:
+                break
+        tmp = Active.scanList[x]
+        Active.scanList[x].options[id] = '1' if state is 'down' else '0'
+        if id is 'BACKUP':
+            Active.scanList[x].options['DEL_F_SIZE'] = '1' if state is 'normal' else '0'
+        elif id is 'DEL_F_SIZE':
+            Active.scanList[x].options['BACKUP'] = '1' if state is 'normal' else '0'
+        elif id is 'BACKUP_OLD':
+            Active.scanList[x].options['DEL_F_OLD'] = '1' if state is 'normal' else '0'
+        elif id is 'DEL_F_OLD':
+            Active.scanList[x].options['BACKUP_OLD'] = '1' if state is 'normal' else '0'
+        try:
+            Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options)
+        except ScanException as se:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=se.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = se.title
+            popup.open()
+        print(Active.scanList[x].get_options())
 if __name__ == '__main__':
     ManagerApp().run()

@@ -77,8 +77,17 @@ class QrDetailView(GridLayout):
 
         self.redraw()
 
-    def restoreItem(self, item):
-        print(str(item))
+    def restoreItem(self, item, index):
+        # try:
+        #     Active.qr_task.restore_from_qr(Active.client, item.f_name)
+        # except QrException as qr:
+        #     popup = Popup(size_hint=(None, None), size=(400, 150))
+        #     popup.add_widget(Label(text=qr.value))
+        #     popup.bind(on_press=popup.dismiss)
+        #     popup.title = qr.title
+        #     popup.open()
+        #     return
+        Active.qrList.pop(index)
 
     def deleteItem(self, item, index):
         # try:
@@ -107,7 +116,6 @@ class QuarantineViewModal(BoxLayout):
         #     popup.bind(on_press=popup.dismiss)
         #     popup.title = qr.title
         #     popup.open()
-        #     return
         for x in range(0, len(Active.qrList)):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})

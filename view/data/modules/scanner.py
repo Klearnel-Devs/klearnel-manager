@@ -26,6 +26,13 @@ class ScLabel(ListItemLabel):
 class AddScannerElementButton(Button):
     pass
 
+class ScToggleButton(ToggleButton):
+    value = StringProperty('', allownone=True)
+
+    def __init__(self, **kwargs):
+        self.value = kwargs.get('value', '')
+        super(ScToggleButton, self).__init__(**kwargs)
+
 class ScDetailView(BoxLayout):
     sc_name = StringProperty('', allownone=True)
     obj = None
@@ -50,39 +57,39 @@ class ScDetailView(BoxLayout):
                     box5 = BoxLayout(orientation='horizontal')
                     box6 = BoxLayout(orientation='horizontal')
                     box1.add_widget(Label(text="Path:", halign='right'))
-                    box1.add_widget(Label(text=self.sc_name))
+                    box1.add_widget(Label(id='path', text=self.sc_name))
                     box2.add_widget(Label(text="Broken Symlinks:", halign='right'))
-                    box2.add_widget(ToggleButton(id='BR_S', text="Delete", halign='right',
-                                           state='down' if bool(Active.scanList[x].options['BR_S']) else 'normal'))
+                    box2.add_widget(ScToggleButton(value=self.sc_name, id='BR_S', text="Delete", halign='right',
+                                          state='down' if bool(Active.scanList[x].options['BR_S']) else 'normal'))
                     box2.add_widget(Label(text="Duplicate Symlinks:", halign='right'))
-                    box2.add_widget(ToggleButton(id='DUP_S', text="Delete", halign='right',
+                    box2.add_widget(ScToggleButton(value=self.sc_name, id='DUP_S', text="Delete", halign='right',
                                            state='down' if bool(Active.scanList[x].options['DUP_S']) else 'normal'))
                     box3.add_widget(Label(text="Duplicate Files:", halign='right'))
-                    box3.add_widget(ToggleButton(id='DUP_F', text="Delete", halign='right',
+                    box3.add_widget(ScToggleButton(value=self.sc_name, id='DUP_F', text="Delete", halign='right',
                                            state='down' if bool(Active.scanList[x].options['DUP_F']) else 'normal'))
                     box3.add_widget(Label(text="Permissions Integrity:", halign='right'))
-                    box3.add_widget(ToggleButton(id='INTEGRITY', text="Fix", halign='right',
+                    box3.add_widget(ScToggleButton(value=self.sc_name, id='INTEGRITY', text="Fix", halign='right',
                                            state='down' if bool(Active.scanList[x].options['INTEGRITY']) else 'normal'))
                     box5.add_widget(Label(text="Files Larger Than X Size:", halign='right'))
                     box4.add_widget(Label(text="Is Temporory Folder:", halign='right'))
-                    box4.add_widget(ToggleButton(id='is_temp', text="Yes", halign='right',
+                    box4.add_widget(ScToggleButton(value=self.sc_name, id='is_temp', text="Yes", halign='right',
                                            state='down' if bool(Active.scanList[x].is_temp) else 'normal'))
                     box4.add_widget(Label(text="Temp Folders:", halign='right'))
-                    box4.add_widget(ToggleButton(id='CL_TEMP', text="Clean", halign='right',
+                    box4.add_widget(ScToggleButton(value=self.sc_name, id='CL_TEMP', text="Clean", halign='right',
                                            state='down' if bool(Active.scanList[x].options['CL_TEMP']) else 'normal',
                                          disabled=False if bool(Active.scanList[x].is_temp) else True))
-                    box5.add_widget(ToggleButton(id='BACKUP', text="Backup", halign='right', group="sizeFiles",
+                    box5.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP', text="Backup", halign='right', group="sizeFiles",
                                                  state='down' if bool(Active.scanList[x].options['BACKUP'])
                                                  else 'normal'))
-                    box5.add_widget(ToggleButton(id='DEL_F_SIZE', text="Delete", halign='right', group="sizeFiles",
+                    box5.add_widget(ScToggleButton(value=self.sc_name, id='DEL_F_SIZE', text="Delete", halign='right', group="sizeFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_SIZE'])
                                                  else 'normal'))
                     box6.add_widget(Label(text="Files Older than " + str(Active.scanList[x].max_age) + " days:",
                                           halign='right'))
-                    box6.add_widget(ToggleButton(id='BACKUP_OLD', text="Backup", halign='right', group="oldFiles",
+                    box6.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP_OLD', text="Backup", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['BACKUP_OLD'])
                                                  else 'normal'))
-                    box6.add_widget(ToggleButton(id='DEL_F_OLD', text="Delete", halign='right', group="oldFiles",
+                    box6.add_widget(ScToggleButton(value=self.sc_name, id='DEL_F_OLD', text="Delete", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_OLD'])
                                                  else 'normal'))
                     self.add_widget(box1)
@@ -94,6 +101,9 @@ class ScDetailView(BoxLayout):
                     self.add_widget(Button(text="Remove From Scanner",
                                            on_press=lambda a: self.deleteItem(Active.scanList[x], x)))
                     break
+
+    def print(instance, id, state):
+        print(id + " : " + state)
 
     def deleteItem(self, item, index):
         # try:
@@ -209,7 +219,4 @@ class ScannerViewModal(BoxLayout):
                               {'cls': ScButton,
                                'kwargs': {'text' : 'BACKUP_OLD',
                                           'state': 'down' if bool(scdata['options']['BACKUP_OLD']) else 'normal'}}]}
-
-    def print(self):
-        print("hello")
 

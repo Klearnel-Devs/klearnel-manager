@@ -63,6 +63,10 @@ class TaskScan(Tasker):
         finally:
             net.s.close()
 
+    def mod_from_scan(self, client, path, options):
+        # raise ScanException("Unable to change options for " + path + " from scanner on " + client.name)
+        pass
+
     def rm_from_scan(self, client, path):
         net = Networker()
         net.connect_to(client.name)
