@@ -71,13 +71,10 @@ class ScDetailView(BoxLayout):
                     box3.add_widget(ScToggleButton(value=self.sc_name, id='INTEGRITY', text="Fix", halign='right',
                                            state='down' if bool(Active.scanList[x].options['INTEGRITY']) else 'normal'))
                     box5.add_widget(Label(text="Files Larger Than X Size:", halign='right'))
-                    box4.add_widget(Label(text="Is Temporory Folder:", halign='right'))
-                    box4.add_widget(ScToggleButton(value=self.sc_name, id='is_temp', text="Yes", halign='right',
-                                           state='down' if bool(Active.scanList[x].is_temp) else 'normal'))
-                    box4.add_widget(Label(text="Temp Folders:", halign='right'))
-                    box4.add_widget(ScToggleButton(value=self.sc_name, id='CL_TEMP', text="Clean", halign='right',
-                                           state='down' if bool(Active.scanList[x].options['CL_TEMP']) else 'normal',
-                                         disabled=False if bool(Active.scanList[x].is_temp) else True))
+                    box4.add_widget(Label(text="Is Temporary Folder:", halign='right'))
+                    btntmp = ScToggleButton(value=self.sc_name, id='is_temp', text="Clean", halign='right',
+                                           state='down' if bool(Active.scanList[x].is_temp) else 'normal')
+                    box4.add_widget(btntmp)
                     box5.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP', text="Backup", halign='right', group="sizeFiles",
                                                  state='down' if bool(Active.scanList[x].options['BACKUP'])
                                                  else 'normal'))
@@ -100,7 +97,12 @@ class ScDetailView(BoxLayout):
                     self.add_widget(box6)
                     self.add_widget(Button(text="Remove From Scanner",
                                            on_press=lambda a: self.deleteItem(Active.scanList[x], x)))
+                    print(Active.scanList[x].get_options())
                     break
+
+    def callback(self):
+        Clock.schedule_once(lambda dt: self.redraw(), 0.5)
+        print('Scheduled')
 
     def print(instance, id, state):
         print(id + " : " + state)
@@ -165,7 +167,7 @@ class ScannerViewModal(BoxLayout):
         self.list_adapter.bind(
             on_selection_change=detail_view.sc_changed)
         self.add_widget(detail_view)
-        Clock.schedule_interval(self.callback, 5)
+        Clock.schedule_interval(self.callback, 1)
 
     def callback(self, dt):
         # try:

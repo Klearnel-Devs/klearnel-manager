@@ -38,7 +38,7 @@ class ScanElem:
 
 def sc_temp_create1():
     scan_e = ScanElem("/home/antoine/Documents")
-    scan_e.set_options("001100000")
+    scan_e.set_options("000100000")
     scan_e.back_limit_size = 100
     scan_e.del_limit_size = 100
     scan_e.is_temp = 0
@@ -47,7 +47,7 @@ def sc_temp_create1():
 
 def sc_temp_create2():
     scan_e = ScanElem("/home/antoine/Images")
-    scan_e.set_options("001101101")
+    scan_e.set_options("000101101")
     scan_e.back_limit_size = 100
     scan_e.del_limit_size = 100
     scan_e.is_temp = 0
@@ -74,7 +74,7 @@ def sc_temp_create4():
 
 def sc_temp_create5():
     scan_e = ScanElem("/home/antoine/Test")
-    scan_e.set_options("100101011")
+    scan_e.set_options("100101001")
     scan_e.back_limit_size = 100
     scan_e.del_limit_size = 100
     scan_e.is_temp = 0
