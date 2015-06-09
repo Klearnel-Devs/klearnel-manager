@@ -54,10 +54,16 @@ class Networker:
 
     def get_data(self, buf_size):
         b_result = bytes()
+        end = False
         for i in range(0, buf_size):
             char = self.s.recv(1)
-            if char not in [b'\x00', b'\xff']:
-                b_result += char
+            if not end:
+                if char not in [b'\x00', b'\xff']:
+                    b_result += char
+                else:
+                    for j in range(i, buf_size):
+                        b_result += b'\x00'
+                    end = True
         result = b_result.decode('UTF-8')
         return result.split('\x00')[0]
 
