@@ -108,15 +108,15 @@ class ScDetailView(BoxLayout):
         print(id + " : " + state)
 
     def deleteItem(self, item, index):
-        # try:
-        #     Active.scan_task.rm_from_scan(Active.client, item.path)
-        # except ScanException as se:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=se.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = se.title
-        #     popup.open()
-        #     return
+        try:
+            Active.scan_task.rm_from_scan(Active.client, item.path)
+        except ScanException as se:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=se.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = se.title
+            popup.open()
+            return
         Active.scanList.pop(index)
 
     def sc_changed(self, list_adapter, *args):
@@ -138,16 +138,16 @@ class ScannerViewModal(BoxLayout):
         self.scdata = list()
         self.orientation = 'vertical'
         # FOR NETWORK
-        # Active.scanList.clear()
-        # try:
-        #     Active.scanList = Active.scan_task.get_scan_list(Active.client)
-        # except ScanException as se:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=se.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = se.title
-        #     popup.open()
-        #     return
+        Active.scanList.clear()
+        try:
+            Active.scanList = Active.scan_task.get_scan_list(Active.client)
+        except ScanException as se:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=se.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = se.title
+            popup.open()
+            return
         for x in range(0, len(Active.scanList)):
             self.scdata.append({'path': Active.scanList[x].path,
                                 'options': Active.scanList[x].options})
@@ -170,15 +170,15 @@ class ScannerViewModal(BoxLayout):
         Clock.schedule_interval(self.callback, 1)
 
     def callback(self, dt):
-        # try:
-        #     Active.scanList = Active.scan_task.get_scan_list(Active.client)
-        # except ScanException as se:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=se.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = se.title
-        #     popup.open()
-        #     return
+        try:
+            Active.scanList = Active.scan_task.get_scan_list(Active.client)
+        except ScanException as se:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=se.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = se.title
+            popup.open()
+            return
         self.scdata.clear()
         for x in range(0, len(Active.scanList)):
             self.scdata.append({'path': Active.scanList[x].path,

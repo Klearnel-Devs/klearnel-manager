@@ -78,6 +78,7 @@ class ManagerApp(App):
         Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
         Active.scan_task = TaskScan()
         Active.qr_task = TaskQR()
+        Active.conf_task = TaskConfig()
 
     def build(self):
         self.title = 'Klearnel Manager'
@@ -163,35 +164,35 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        # net = Networker()
-        # for x in range(0, len(Active.cl.c_list)):
-        #     try:
-        #         if Active.cl.c_list[x].name == host:
-        #             net.connect_to(host)
-        #             try:
-        #                 net.send_val(Active.cl.c_list[x].token)
-        #                 if net.get_ack() != net.SOCK_ACK:
-        #                     raise BadCredentials("Connection rejected by " + host)
-        #                 net.send_val(Active.cl.c_list[x].password)
-        #                 if net.get_ack() != net.SOCK_ACK:
-        #                     raise BadCredentials("Connection rejected by " + host)
-        #                 net.s.close()
-        #             except BadCredentials as bc:
-        #                 popup = Popup(size_hint=(None, None), size=(300, 150))
-        #                 popup.add_widget(Label(text=bc.value))
-        #                 popup.bind(on_press=popup.dismiss)
-        #                 popup.title = "Wrong Credentials"
-        #                 popup.open()
-        #                 return
-        #             Active.client = Active.cl.c_list[x]
-        #             break
-        #     except NoConnectivity:
-        #         popup = Popup(size_hint=(None, None), size=(300, 150))
-        #         popup.add_widget(Label(text="Unable to connect to host " + host))
-        #         popup.bind(on_press=popup.dismiss)
-        #         popup.title = "No connectivity"
-        #         popup.open()
-        #         return
+        net = Networker()
+        for x in range(0, len(Active.cl.c_list)):
+            try:
+                if Active.cl.c_list[x].name == host:
+                    net.connect_to(host)
+                    try:
+                        net.send_val(Active.cl.c_list[x].token)
+                        if net.get_ack() != net.SOCK_ACK:
+                            raise BadCredentials("Connection rejected by " + host)
+                        net.send_val(Active.cl.c_list[x].password)
+                        if net.get_ack() != net.SOCK_ACK:
+                            raise BadCredentials("Connection rejected by " + host)
+                        net.s.close()
+                    except BadCredentials as bc:
+                        popup = Popup(size_hint=(None, None), size=(300, 150))
+                        popup.add_widget(Label(text=bc.value))
+                        popup.bind(on_press=popup.dismiss)
+                        popup.title = "Wrong Credentials"
+                        popup.open()
+                        return
+                    Active.client = Active.cl.c_list[x]
+                    break
+            except NoConnectivity:
+                popup = Popup(size_hint=(None, None), size=(300, 150))
+                popup.add_widget(Label(text="Unable to connect to host " + host))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = "No connectivity"
+                popup.open()
+                return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -242,14 +243,31 @@ class ManagerApp(App):
         return Active.confList.get_value(Active.confList, section, entry)
 
     def setConf(self, *kwargs):
-        print('!')
         for arg in kwargs:
             if arg.__class__ is CfgCheckBox:
                 if arg.active is not bool(Active.confList.get_value(Active.confList, arg.value1, arg.value2)):
-                    pass
+                    try:
+                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, int(arg.active))
+                    except ConfigException as ce:
+                        popup = Popup(size_hint=(None, None), size=(400, 150))
+                        popup.add_widget(Label(text=ce.value))
+                        popup.bind(on_press=popup.dismiss)
+                        popup.title = ce.title
+                        popup.open()
+                        return
+                    Active.confList.set_config(Active.confList, arg.value1, arg.value2, arg.active)
             else:
                 if str(arg.text) != Active.confList.get_value(Active.confList, arg.value1, arg.value2):
-                    pass
+                    try:
+                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, arg.text)
+                    except ConfigException as ce:
+                        popup = Popup(size_hint=(None, None), size=(400, 150))
+                        popup.add_widget(Label(text=ce.value))
+                        popup.bind(on_press=popup.dismiss)
+                        popup.title = ce.title
+                        popup.open()
+                        return
+                    Active.confList.set_config(Active.confList, arg.value1, arg.value2, arg.text)
 
     def addscan(self, path, is_temp, size, age, *args):
         try:
@@ -275,15 +293,15 @@ class ManagerApp(App):
         tmp.back_limit_size = float(size) if tmp.options['BACKUP'] is '1' else None
         tmp.del_limit_size = float(size) if tmp.options['DEL_F_SIZE'] is '1' else None
         tmp.max_age = age
-        # try:
-        #     Active.scan_task.add_to_scan(Active.client, tmp)
-        # except ScanException as se:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=se.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = se.title
-        #     popup.open()
-        #     return
+        try:
+            Active.scan_task.add_to_scan(Active.client, tmp)
+        except ScanException as se:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=se.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = se.title
+            popup.open()
+            return
         self.get_index("Scanner")
         self.load_screen(self.index)
 
@@ -298,15 +316,15 @@ class ManagerApp(App):
             popup.title = "Input Error"
             popup.open()
             return
-        # try:
-        #     Active.qr_task.add_to_qr(Active.client, filename)
-        # except QrException as qr:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=qr.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = qr.title
-        #     popup.open()
-        #     return
+        try:
+            Active.qr_task.add_to_qr(Active.client, filename)
+        except QrException as qr:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qr.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qr.title
+            popup.open()
+            return
         self.get_index("Quarantine")
         self.load_screen(self.index)
 

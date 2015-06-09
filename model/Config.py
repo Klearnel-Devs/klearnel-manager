@@ -50,6 +50,16 @@ class Config:
                 return bool(self.lrg[entry])
             return str(self.lrg[entry])
 
+    def set_config(self, section, key, value):
+        if section is 'gbl':
+            self.gbl[key] = value
+        elif section is 'sma':
+            self.sma[key] = value
+        elif section is 'med':
+            self.med[key] = value
+        else:
+            self.lrg[key] = value
+
 if __name__ == '__main__':
     cfg = Config()
     print(cfg.gbl['log_age'])

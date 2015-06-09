@@ -55,7 +55,7 @@ class QrDetailView(GridLayout):
                     box3.add_widget(Label(text="Expiration:", halign='right'))
                     box3.add_widget(Label(text=format(Active.qrList[x].get_expire())))
                     box4.add_widget(Button(text="Restore From Quarantine",
-                                           on_press=lambda a: self.restoreItem(Active.qrList[x])))
+                                           on_press=lambda a: self.restoreItem(Active.qrList[x], x)))
                     box4.add_widget(Button(text="Permanently Delete",
                                            on_press=lambda a: self.deleteItem(Active.qrList[x], x)))
                     self.add_widget(box1)
@@ -74,31 +74,30 @@ class QrDetailView(GridLayout):
                 self.qr_name = selected_object
             else:
                 self.qr_name = selected_object.text
-
         self.redraw()
 
     def restoreItem(self, item, index):
-        # try:
-        #     Active.qr_task.restore_from_qr(Active.client, item.f_name)
-        # except QrException as qr:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=qr.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = qr.title
-        #     popup.open()
-        #     return
+        try:
+            Active.qr_task.restore_from_qr(Active.client, item.f_name)
+        except QrException as qr:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qr.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qr.title
+            popup.open()
+            return
         Active.qrList.pop(index)
 
     def deleteItem(self, item, index):
-        # try:
-        #     Active.qr_task.rm_from_qr(Active.client, item.f_name)
-        # except QrException as qr:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=qr.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = qr.title
-        #     popup.open()
-        #     return
+        try:
+            Active.qr_task.rm_from_qr(Active.client, item.f_name)
+        except QrException as qr:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qr.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qr.title
+            popup.open()
+            return
         Active.qrList.pop(index)
 
 class QuarantineViewModal(BoxLayout):
@@ -107,15 +106,15 @@ class QuarantineViewModal(BoxLayout):
     def __init__(self, **kwargs):
         self.qrdata = list()
         # FOR NETWORK
-        # Active.qrList.clear()
-        # try:
-        #     Active.qrList = Active.qr_task.get_qr_list(Active.client)
-        # except QrException as qr:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=qr.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = qr.title
-        #     popup.open()
+        Active.qrList.clear()
+        try:
+            Active.qrList = Active.qr_task.get_qr_list(Active.client)
+        except QrException as qr:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qr.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qr.title
+            popup.open()
         for x in range(0, len(Active.qrList)):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})
@@ -140,15 +139,15 @@ class QuarantineViewModal(BoxLayout):
         Clock.schedule_interval(self.callback, 5)
 
     def callback(self, dt):
-        # try:
-        #     Active.qrList = Active.qr_task.get_qr_list(Active.client)
-        # except QrException as qr:
-        #     popup = Popup(size_hint=(None, None), size=(400, 150))
-        #     popup.add_widget(Label(text=qr.value))
-        #     popup.bind(on_press=popup.dismiss)
-        #     popup.title = qr.title
-        #     popup.open()
-        #     return
+        try:
+            Active.qrList = Active.qr_task.get_qr_list(Active.client)
+        except QrException as qr:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qr.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qr.title
+            popup.open()
+            return
         self.qrdata.clear()
         for x in range(0, len(Active.qrList)):
                 self.qrdata.append({'filename': Active.qrList[x].f_name,

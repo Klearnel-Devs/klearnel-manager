@@ -23,9 +23,10 @@ class Networker:
     def connect_to(self, host, port=42225):
         try:
             ip_addr = socket.gethostbyname(host)
+            self.s.connect((ip_addr, port))
         except:
             raise NoConnectivity("Unable to find "+host)
-        self.s.connect((ip_addr, port))
+
 
     def send_val(self, value):
         if type(value) is str:
