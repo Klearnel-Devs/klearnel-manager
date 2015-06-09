@@ -18,6 +18,8 @@ SCAN_ADD = 10
 SCAN_RM = 11
 SCAN_LIST = 12
 SCAN_OPTIONS = 11
+CONF_LIST = 20
+CONF_MOD = 21
 
 
 class Tasker:
@@ -252,38 +254,28 @@ class TaskConfig(Tasker):
         pass
 
     def send_conf_mod(self, client, section, key, new_value):
-        pass
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
+        try:
+            net.send_val(str(CONF_MOD) + ":0")
+            net.send_val(str(len(section)))
+            net.send_val(section)
+            net.send_val(str(len(key)))
+            net.send_val(key)
+            net.send_val(str(len(new_value)))
+            net.send_val(new_value)
+            if net.get_ack() != net.SOCK_ACK:
+                raise ConnectionError("Operation canceled")
+        except ConnectionError:
+            raise Exception("Unable to modify "+key+" with: "+new_value)
 
 if __name__ == "__main__":
+    from model.Client import Client
+    from controller import Active
+    Active.init()
     cl = ClientList()
     cl.load_list()
-    qr_task = TaskQR()
-    scan_task = TaskScan()
-    scan_e = ScanElem("/home/antoine/Images")
-    scan_e.options = "1011000000"
-    scan_e.back_limit_size = "150.0"
-    scan_e.del_limit_size = "0.0"
-    scan_e.is_temp = "0"
-    scan_e.max_age = "15"
-    # scan_task.add_to_scan(cl.c_list[0], scan_e)
-    # scan_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")
-    """scanList = scan_task.get_scan_list(cl.c_list[0])
-    for scan_elem in scanList:
-        print("Elem "+scan_elem.path)
-        print(" - Options: "+scan_elem.options)
-        print(" - Back limit size: "+scan_elem.back_limit_size)
-        print(" - Del limit size: "+scan_elem.del_limit_size)
-        print(" - Temp folder ? "+("true" if (scan_elem.is_temp == 1) else "false"))
-        print(" - Max Age: "+scan_elem.max_age)"""
-    """qrList = qr_task.get_qr_list(cl.c_list[0])
-    for qrElem in qrList:
-        print("Elem "+qrElem.f_name)
-        print(" - Old path: "+qrElem.o_path)
-        print(" - Entry date: "+qrElem.d_begin)
-        print(" - Expire date: "+qrElem.d_expire)"""
-    # qr_task.restore_from_qr(cl.c_list[0], "toto.txt")
-    """qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/toto.txt")
-    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/tata.txt")
-    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/trololo.txt")"""
-    # qr_task.rm_all_from_qr(cl.c_list[0])
-    qr_task.restore_all_from_qr(cl.c_list[0])
+    conf_task = TaskConfig()
+    conf_task.send_conf_mod(cl.c_list[0], "SMALL", "LOCATION", "/home/antoine/Documents/backup/jour1/mois1")
+    print("Salut")
