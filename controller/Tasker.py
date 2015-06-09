@@ -1,6 +1,5 @@
 __author__ = 'antoine'
 from controller.Networker import Networker
-from model.Client import ClientList
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
 from model.Exceptions import ScanException, QrException
@@ -247,7 +246,95 @@ class TaskQR(Tasker):
 
 class TaskConfig(Tasker):
     def get_config(self, client):
-        pass
+        net = Networker()
+        net.connect_to(client.name)
+        self.send_credentials(net, client)
+        try:
+            net.send_val(str(CONF_LIST) + ":0")
+
+            size = net.get_data(20)
+            print("Size received : "+size)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_log_age(int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_size_def("SMALL", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_size_def("MEDIUM", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_size_def("LARGE", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_exp_def("SMALL", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.sma['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.sma['location'] = result
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_exp_def("MEDIUM", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.med['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.med['location'] = result
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.set_exp_def("LARGE", int(result))
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.lrg['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.lrg['location'] = result
+            net.send_ack(net.SOCK_ACK)
+
+        except ConnectionError:
+            raise Exception("Unable to get configurations from " + client.name)
+        finally:
+            net.s.close()
 
     def send_conf_mod(self, client, section, key, new_value):
         net = Networker()
@@ -265,13 +352,16 @@ class TaskConfig(Tasker):
                 raise ConnectionError("Operation canceled")
         except ConnectionError:
             raise Exception("Unable to modify "+key+" with: "+new_value)
+        finally:
+            net.s.close()
 
 if __name__ == "__main__":
-    from model.Client import Client
+    from model.Client import Client, ClientList
+    from model.Config import Config
     from controller import Active
-    Active.init()
-    cl = ClientList()
-    cl.load_list()
+    Active.cl = ClientList()
+    Active.confList = Config()
+    Active.cl.load_list()
     conf_task = TaskConfig()
-    conf_task.send_conf_mod(cl.c_list[0], "SMALL", "LOCATION", "/home/antoine/Documents/backup/jour1/mois1")
-    print("Salut")
+    conf_task.get_config(Active.cl.c_list[0])
+    print("Value of SMALL -> Location: "+Active.confList.sma['location'])
