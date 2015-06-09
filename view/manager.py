@@ -22,6 +22,7 @@ from model.ScanElem import *
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from view.data.modules.scanner import *
+from view.data.modules.config import *
 
 from view.data.modules.quarantine import *
 import re
@@ -240,6 +241,16 @@ class ManagerApp(App):
     def getConf(self, section, entry):
         return Active.confList.get_value(Active.confList, section, entry)
 
+    def setConf(self, *kwargs):
+        print('!')
+        for arg in kwargs:
+            if arg.__class__ is CfgCheckBox:
+                if arg.active is not bool(Active.confList.get_value(Active.confList, arg.value1, arg.value2)):
+                    pass
+            else:
+                if str(arg.text) != Active.confList.get_value(Active.confList, arg.value1, arg.value2):
+                    pass
+
     def addscan(self, path, is_temp, size, age, *args):
         try:
             if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
@@ -331,5 +342,6 @@ class ManagerApp(App):
             btn.state = 'normal' if state is 'down' else 'down'
             Active.scanList[x] = tmp
         print(Active.scanList[x].get_options())
+
 if __name__ == '__main__':
     ManagerApp().run()

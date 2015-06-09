@@ -36,19 +36,19 @@ class Config:
 
     def get_value(self, section, entry):
         if section == 'gbl':
-            return format(self.gbl[entry])
+            return str(self.gbl[entry])
         if section == 'sma':
             if entry == 'backup':
                 return bool(self.sma[entry])
-            return format(self.sma[entry])
+            return str(self.sma[entry])
         if section == 'med':
             if entry == 'backup':
                 return bool(self.med[entry])
-            return format(self.med[entry])
+            return str(self.med[entry])
         if section == 'lrg':
             if entry == 'backup':
                 return bool(self.lrg[entry])
-            return format(self.lrg[entry])
+            return str(self.lrg[entry])
 
 if __name__ == '__main__':
     cfg = Config()
