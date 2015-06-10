@@ -11,6 +11,8 @@ def init():
     global scan_task
     global tasker
     global conf_task
+    global changed
+    changed = dict(sc=0, qr=1)
     cl = None
     client = None
     user = None

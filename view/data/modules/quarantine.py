@@ -22,6 +22,8 @@ from view.data.modules.scanner import *
 from view.data.modules.quarantine import *
 from model.Exceptions import QrException
 
+update = 0
+
 class QrCompositeListItem(CompositeListItem):
     text = ''
 
@@ -87,6 +89,8 @@ class QrDetailView(GridLayout):
             popup.open()
             return
         Active.qrList.pop(index)
+        global update
+        update = 1
 
     def deleteItem(self, item, index):
         try:
@@ -99,6 +103,8 @@ class QrDetailView(GridLayout):
             popup.open()
             return
         Active.qrList.pop(index)
+        global update
+        update = 1
 
 class QuarantineViewModal(BoxLayout):
     data = ListProperty()
@@ -136,9 +142,24 @@ class QuarantineViewModal(BoxLayout):
         self.list_adapter.bind(
             on_selection_change=detail_view.qr_changed)
         self.add_widget(detail_view)
-        Clock.schedule_interval(self.callback, 5)
+        Clock.schedule_interval(self.callback, 60)
+        Clock.schedule_interval(self.callback2, 5)
 
     def callback(self, dt):
+        self.update_list()
+
+    def callback2(self, dt):
+        global update
+        if update != 0:
+            print("Updating")
+            update = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+        if Active.changed['qr'] != 0:
+            print("Adding")
+            Active.changed['qr'] = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+
+    def update_list(self):
         try:
             Active.qrList = Active.qr_task.get_qr_list(Active.client)
         except QrException as qr:

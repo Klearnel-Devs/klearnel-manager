@@ -13,10 +13,10 @@ class QrElem:
         self.f_name = name
 
     def get_begin(self):
-        return datetime.fromtimestamp(self.d_begin).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.fromtimestamp(int(self.d_begin)).strftime('%Y-%m-%d %H:%M:%S')
 
     def get_expire(self):
-        return datetime.fromtimestamp(self.d_expire).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.fromtimestamp(int(self.d_expire)).strftime('%Y-%m-%d %H:%M:%S')
 
     def __str__(self):
         return self.f_name + " - " + self.o_path + " - " + self.get_begin() + " - " + self.get_expire()

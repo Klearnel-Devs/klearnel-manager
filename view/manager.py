@@ -27,6 +27,8 @@ from view.data.modules.config import *
 from view.data.modules.quarantine import *
 import re
 
+added = 0
+
 class ManagerScreen(Screen):
     fullscreen = BooleanProperty(False)
 
@@ -64,8 +66,8 @@ class ManagerApp(App):
     show_sourcecode = BooleanProperty(False)
     prev = 'Scanner'
     sourcecode = StringProperty()
-    screen_names = ListProperty([])
-    hierarchy = ListProperty([])
+    screen_names = ListProperty()
+    hierarchy = ListProperty()
     user_db = "../user.db"
 
     def __init__(self, **kwargs):
@@ -86,8 +88,8 @@ class ManagerApp(App):
             'Creation', 'Login', 'Chooser', 'Scanner', 'Quarantine',
             'Settings', 'AddServ', 'addscan', 'addquar'])
         self.screen_names = ['Scanner', 'Quarantine', 'Settings']
-        curdir = "../view/"
-        self.available_screens = [join(curdir, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
+        curdir1 = "../view/"
+        self.available_screens = [join(curdir1, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
         self.initial_screen()
 
     def initial_screen(self):
@@ -100,13 +102,29 @@ class ManagerApp(App):
     def get_index(self, page):
         for x in range(0, len(self.available_screens)):
             if self.available_screens[x].find(page) != -1:
+
                 self.index = x
 
     def load_screen(self, index):
+        if index in self.screens:
+            sm = self.root.ids.sm
+            sm.switch_to(self.screens[index], direction='left')
+            self.current_title = self.screens[index].name
+            return self.screens[index]
         screen = Builder.load_file(self.available_screens[index].lower())
         self.screens[index] = screen
         sm = self.root.ids.sm
         sm.switch_to(screen, direction='left')
+        if screen.name is 'Settings':
+            try:
+                Active.confList = Active.conf_task.get_config(Active.client)
+            except ConfigException as ce:
+                popup = Popup(size_hint=(None, None), size=(400, 150))
+                popup.add_widget(Label(text=ce.value))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = ce.title
+                popup.open()
+                return
         self.current_title = screen.name
 
     def register(self, user, pwd, pwd_verif):
@@ -164,19 +182,20 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     def connect(self, host):
-        net = Networker()
+        netw = Networker()
         for x in range(0, len(Active.cl.c_list)):
             try:
                 if Active.cl.c_list[x].name == host:
-                    net.connect_to(host)
+                    netw.connect_to(host)
                     try:
-                        net.send_val(Active.cl.c_list[x].token)
-                        if net.get_ack() != net.SOCK_ACK:
+                        netw.send_val(Active.cl.c_list[x].token)
+                        if netw.get_ack() != netw.SOCK_ACK:
                             raise BadCredentials("Connection rejected by " + host)
-                        net.send_val(Active.cl.c_list[x].password)
-                        if net.get_ack() != net.SOCK_ACK:
+                        netw.send_val(Active.cl.c_list[x].password)
+                        if netw.get_ack() != netw.SOCK_ACK:
                             raise BadCredentials("Connection rejected by " + host)
-                        net.s.close()
+                        netw.send_val(str(NET_CONNEC) + ":0")
+                        netw.s.close()
                     except BadCredentials as bc:
                         popup = Popup(size_hint=(None, None), size=(300, 150))
                         popup.add_widget(Label(text=bc.value))
@@ -291,8 +310,8 @@ class ManagerApp(App):
         for arg in args:
             opt += '0' if arg is 'normal' else '1'
         tmp.set_options(opt)
-        tmp.back_limit_size = float(size) if tmp.options['BACKUP'] is '1' else None
-        tmp.del_limit_size = float(size) if tmp.options['DEL_F_SIZE'] is '1' else None
+        tmp.back_limit_size = int(size)
+        tmp.del_limit_size = int(size)
         tmp.max_age = age
         try:
             Active.scan_task.add_to_scan(Active.client, tmp)
@@ -303,6 +322,7 @@ class ManagerApp(App):
             popup.title = se.title
             popup.open()
             return
+        Active.changed['sc'] = 1
         self.get_index("Scanner")
         self.load_screen(self.index)
 
@@ -326,29 +346,30 @@ class ManagerApp(App):
             popup.title = qr.title
             popup.open()
             return
+        Active.changed['qr'] = 1
         self.get_index("Quarantine")
         self.load_screen(self.index)
 
-    def mod_sc(self, btn, path, id, state):
+    def mod_sc(self, btn, path, ids, state):
         for x in range(0, len(Active.scanList)):
             if path is Active.scanList[x].path:
+                tmp = Active.scanList[x]
                 break
-        tmp = Active.scanList[x]
-        if id is 'is_temp':
+        if ids is 'is_temp':
             Active.scanList[x].is_temp = 1 if state is 'down' else 0
             Active.scanList[x].options['CL_TEMP'] = 1 if state is 'down' else '0'
         else:
-            Active.scanList[x].options[id] = '1' if state is 'down' else '0'
-            if id is 'BACKUP' and state is 'down':
+            Active.scanList[x].options[ids] = '1' if state is 'down' else '0'
+            if ids is 'BACKUP' and state is 'down':
                 Active.scanList[x].options['DEL_F_SIZE'] = '0'
-            elif id is 'DEL_F_SIZE' and state is 'down':
+            elif ids is 'DEL_F_SIZE' and state is 'down':
                 Active.scanList[x].options['BACKUP'] = '0'
-            elif id is 'BACKUP_OLD' and state is 'down':
+            elif ids is 'BACKUP_OLD' and state is 'down':
                 Active.scanList[x].options['DEL_F_OLD'] = '0'
-            elif id is 'DEL_F_OLD' and state is 'down':
+            elif ids is 'DEL_F_OLD' and state is 'down':
                 Active.scanList[x].options['BACKUP_OLD'] = '0'
         try:
-            if id is 'is_temp':
+            if ids is 'is_temp':
                 Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].is_temp)
             else:
                 Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options)

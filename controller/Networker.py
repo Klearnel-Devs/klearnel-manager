@@ -2,7 +2,7 @@ __author__ = 'antoine'
 """
     Class to send actions to execute to the klearnel module
 """
-import socket
+import socket, re
 
 from controller.Crypter import Crypter
 from model.Exceptions import *
@@ -21,8 +21,14 @@ class Networker:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect_to(self, host, port=42225):
+        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host):
+            ip_addr = host
+        else:
+            try:
+                ip_addr = socket.gethostbyname(host)
+            except:
+                raise NoConnectivity("Unable to find "+host)
         try:
-            ip_addr = socket.gethostbyname(host)
             self.s.connect((ip_addr, port))
         except:
             raise NoConnectivity("Unable to find "+host)

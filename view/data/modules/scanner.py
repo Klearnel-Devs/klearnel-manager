@@ -13,6 +13,8 @@ from model.Exceptions import ScanException
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
 
+update = 0
+
 class ScCompositeListItem(CompositeListItem):
     text = ''
 
@@ -70,25 +72,33 @@ class ScDetailView(BoxLayout):
                     box3.add_widget(Label(text="Permissions Integrity:", halign='right'))
                     box3.add_widget(ScToggleButton(value=self.sc_name, id='INTEGRITY', text="Fix", halign='right',
                                            state='down' if bool(Active.scanList[x].options['INTEGRITY']) else 'normal'))
-                    box5.add_widget(Label(text="Files Larger Than X Size:", halign='right'))
+
                     box4.add_widget(Label(text="Is Temporary Folder:", halign='right'))
                     btntmp = ScToggleButton(value=self.sc_name, id='is_temp', text="Clean", halign='right',
-                                           state='down' if bool(Active.scanList[x].is_temp) else 'normal')
+                                            state='down' if bool(Active.scanList[x].is_temp) else 'normal')
                     box4.add_widget(btntmp)
+                    tmpSize = Active.scanList[x].back_limit_size if bool(Active.scanList[x].options['BACKUP']) \
+                                                                 else Active.scanList[x].del_limit_size
+                    box5.add_widget(Label(text="Files Larger Than {0:g}".format(float(tmpSize)) + "MB:", halign='right'))
                     box5.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP', text="Backup", halign='right', group="sizeFiles",
-                                                 state='down' if bool(Active.scanList[x].options['BACKUP'])
-                                                 else 'normal'))
+                                                   state='down' if bool(Active.scanList[x].options['BACKUP'])
+                                                   else 'normal',
+                                                   disabled=True if float(Active.scanList[x].back_limit_size) < 1
+                                                   else False))
                     box5.add_widget(ScToggleButton(value=self.sc_name, id='DEL_F_SIZE', text="Delete", halign='right', group="sizeFiles",
-                                                 state='down' if bool(Active.scanList[x].options['DEL_F_SIZE'])
-                                                 else 'normal'))
-                    box6.add_widget(Label(text="Files Older than " + str(Active.scanList[x].max_age) + " days:",
+                                                   state='down' if bool(Active.scanList[x].options['DEL_F_SIZE'])
+                                                   else 'normal',
+                                                   disabled=True if float(Active.scanList[x].del_limit_size) < 1
+                                                   else False))
+                    tmpAge = Active.scanList[x].max_age
+                    box6.add_widget(Label(text="Files Older than " + (str(tmpAge) if int(tmpAge) > 0 else 'N/A') + " days:",
                                           halign='right'))
                     box6.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP_OLD', text="Backup", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['BACKUP_OLD'])
-                                                 else 'normal'))
+                                                 else 'normal', disabled=True if float(tmpAge) < 1 else False))
                     box6.add_widget(ScToggleButton(value=self.sc_name, id='DEL_F_OLD', text="Delete", halign='right', group="oldFiles",
                                                  state='down' if bool(Active.scanList[x].options['DEL_F_OLD'])
-                                                 else 'normal'))
+                                                 else 'normal', disabled=True if float(tmpAge) < 1 else False))
                     self.add_widget(box1)
                     self.add_widget(box2)
                     self.add_widget(box3)
@@ -102,10 +112,6 @@ class ScDetailView(BoxLayout):
 
     def callback(self):
         Clock.schedule_once(lambda dt: self.redraw(), 0.5)
-        print('Scheduled')
-
-    def print(instance, id, state):
-        print(id + " : " + state)
 
     def deleteItem(self, item, index):
         try:
@@ -118,6 +124,8 @@ class ScDetailView(BoxLayout):
             popup.open()
             return
         Active.scanList.pop(index)
+        global update
+        update = 1
 
     def sc_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
@@ -167,9 +175,25 @@ class ScannerViewModal(BoxLayout):
         self.list_adapter.bind(
             on_selection_change=detail_view.sc_changed)
         self.add_widget(detail_view)
-        Clock.schedule_interval(self.callback, 1)
+        Clock.schedule_interval(self.callback, 60)
+        Clock.schedule_interval(self.callback2, 5)
 
     def callback(self, dt):
+        self.update_list()
+
+    def callback2(self, dt):
+        global update
+        if update != 0:
+            print("Updating")
+            update = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+        if Active.changed['sc'] != 0:
+            print("Adding")
+            Active.changed['sc'] = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+
+    def update_list(self):
+        print('Called')
         try:
             Active.scanList = Active.scan_task.get_scan_list(Active.client)
         except ScanException as se:

@@ -16,9 +16,10 @@ QR_LIST_RECALL = 8
 SCAN_ADD = 10
 SCAN_RM = 11
 SCAN_LIST = 12
-SCAN_OPTIONS = 11
+SCAN_MOD = 13
 CONF_LIST = 20
 CONF_MOD = 21
+NET_CONNEC = 30
 
 
 class Tasker:
@@ -59,21 +60,40 @@ class TaskScan(Tasker):
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
             net.send_val(new_elem.get_options())
-            net.send_val(str(len(new_elem.back_limit_size)))
+            net.send_val(len(str(new_elem.back_limit_size)))
             net.send_val(new_elem.back_limit_size)
-            net.send_val(str(len(new_elem.del_limit_size)))
+            net.send_val(len(str(new_elem.del_limit_size)))
             net.send_val(new_elem.del_limit_size)
             net.send_val(new_elem.is_temp)
-            net.send_val(str(len(new_elem.max_age)))
+            net.send_val(len(str(new_elem.max_age)))
             net.send_val(new_elem.max_age)
         except ConnectionError:
-            raise ScanException("Unable to add " + new_elem.path + " to scanner on " + client.name)
+            raise ScanException("Unable to add " + new_elem.path + "\nto scanner on " + client.name)
         finally:
             net.s.close()
 
     def mod_from_scan(self, client, path, options):
-        raise ScanException("Unable to change options for " + path +
+        net = Networker()
+        try:
+            net.connect_to(client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
+        try:
+            self.send_credentials(net, client)
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
+            net.s.close()
+        try:
+            net.send_val(str(SCAN_MOD) + ":" + str(len(new_elem.path)))
+            net.send_val(new_elem.path)
+            net.send_val(new_elem.get_options())
+            net.send_val(new_elem.is_temp)
+        except ConnectionError:
+            raise ScanException("Unable to change options for " + path +
                             "\n from scanner on " + client.name)
+        finally:
+            net.s.close()
+
 
     def rm_from_scan(self, client, path):
         net = Networker()
@@ -411,7 +431,7 @@ class TaskConfig(Tasker):
             net.send_ack(net.SOCK_ACK)
 
         except ConnectionError:
-            raise Exception("Unable to get configurations from " + client.name)
+            raise ConfigException("Unable to get configurations from " + client.name)
         finally:
             net.s.close()
 
