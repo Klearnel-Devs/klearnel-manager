@@ -60,13 +60,19 @@ class TaskScan(Tasker):
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
             net.send_val(new_elem.get_options())
-            net.send_val(len(str(new_elem.back_limit_size)))
+            net.send_val(str(len(str(new_elem.back_limit_size))))
+            print(str(len(str(new_elem.back_limit_size))))
             net.send_val(new_elem.back_limit_size)
+            print(str(new_elem.back_limit_size))
             net.send_val(len(str(new_elem.del_limit_size)))
+            print(str(len(str(new_elem.del_limit_size))))
             net.send_val(new_elem.del_limit_size)
+            print(str(new_elem.del_limit_size))
             net.send_val(new_elem.is_temp)
             net.send_val(len(str(new_elem.max_age)))
+            print(str(len(str(new_elem.max_age))))
             net.send_val(new_elem.max_age)
+            print(str(new_elem.max_age))
         except ConnectionError:
             raise ScanException("Unable to add " + new_elem.path + "\nto scanner on " + client.name)
         finally:
@@ -160,12 +166,14 @@ class TaskScan(Tasker):
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
                 scan_elem.back_limit_size = result
+                print(str(result))
                 net.send_ack(net.SOCK_ACK)
 
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
                 scan_elem.del_limit_size = result
+                print(str(result))
                 net.send_ack(net.SOCK_ACK)
 
                 size = net.get_data(20)
@@ -178,6 +186,7 @@ class TaskScan(Tasker):
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
                 scan_elem.max_age = result
+                print(str(result))
                 net.send_ack(net.SOCK_ACK)
 
                 scan_list.append(scan_elem)

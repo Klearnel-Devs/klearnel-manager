@@ -202,7 +202,12 @@ class ManagerApp(App):
                         popup.bind(on_press=popup.dismiss)
                         popup.title = "Wrong Credentials"
                         popup.open()
-                        return
+                    except ConnectionError as ce:
+                        popup = Popup(size_hint=(None, None), size=(300, 150))
+                        popup.add_widget(Label(text=ce.value))
+                        popup.bind(on_press=popup.dismiss)
+                        popup.title = "Connection Error"
+                        popup.open()
                     Active.client = Active.cl.c_list[x]
                     break
             except NoConnectivity:

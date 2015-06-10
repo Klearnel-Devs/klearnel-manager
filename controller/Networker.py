@@ -33,18 +33,14 @@ class Networker:
         except:
             raise NoConnectivity("Unable to find "+host)
 
-
     def send_val(self, value):
-        print("4.1")
         if type(value) is str:
             self.s.send(bytes(value, 'UTF-8'))
         elif type(value) is bytes:
             self.s.send(value)
         else:
             self.s.send(bytes(value))
-        print("4.2")
         ack = self.s.recv(1).decode('UTF-8')
-        print("4.3")
         if ack != self.SOCK_ACK:
             raise ConnectionError("The operation couldn't be executed on the device, error: "+ack)
 
