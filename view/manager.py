@@ -14,7 +14,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from controller.Networker import *
 from controller.Tasker import *
-from model.Client import Client
+from model.Client import Client, ClientList
 from controller import Active
 from model.Config import Config
 from model.QrElem import *
@@ -193,6 +193,7 @@ class ManagerApp(App):
                 popup.title = "No connectivity"
                 popup.open()
                 return
+        print("Connected")
         self.get_index('Scanner')
         self.load_screen(self.index)
 
