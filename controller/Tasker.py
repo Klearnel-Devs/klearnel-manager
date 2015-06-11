@@ -3,6 +3,7 @@ from controller.Networker import Networker
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
 from model.Exceptions import *
+from controller import Active
 
 KL_EXIT = -1
 QR_ADD = 1
@@ -361,7 +362,6 @@ class TaskConfig(Tasker):
             net.send_val(str(CONF_LIST) + ":0")
 
             size = net.get_data(20)
-            print("Size received : "+size)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
             Active.confList.set_log_age(int(result))
@@ -370,25 +370,25 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("SMALL", int(result))
+            Active.confList.set_size_def("small", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("MEDIUM", int(result))
+            Active.confList.set_size_def("medium", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("LARGE", int(result))
+            Active.confList.set_size_def("large", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("SMALL", int(result))
+            Active.confList.set_exp_def("sma", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
@@ -406,7 +406,7 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("MEDIUM", int(result))
+            Active.confList.set_exp_def("med", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
@@ -424,7 +424,7 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("LARGE", int(result))
+            Active.confList.set_exp_def("lrg", int(result))
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)

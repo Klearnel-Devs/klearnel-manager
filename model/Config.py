@@ -7,10 +7,10 @@ class Config:
     lrg = dict(exp_def=0, backup=0, location='')
 
     def set_log_age(self, new):
-        self.gbl['log_age'] = round(new * 86400)
+        self.gbl['log_age'] = round(new // 86400)
 
     def get_log_age(self):
-        return self.gbl['log_age'] // 86400
+        return self.gbl['log_age'] * 86400
 
     def set_exp_def(self, section, new):
         if section == 'sma':
@@ -29,10 +29,10 @@ class Config:
             return self.lrg['exp_def'] * 86400
 
     def set_size_def(self, key, value):
-        self.gbl[key] = value // 1024
+        self.gbl[key] = value // pow(1024, 2)
 
     def get_size_def(self, key):
-        return self.gbl[key] * 1024
+        return self.gbl[key] * pow(1024, 2)
 
     def get_value(self, section, entry):
         if section == 'gbl':

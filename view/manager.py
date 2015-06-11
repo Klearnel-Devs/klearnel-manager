@@ -75,7 +75,7 @@ class ManagerApp(App):
         self.screens = {}
         self.available_screens = {}
         Active.cl = ClientList
-        Active.confList = Config
+        Active.confList = Config()
         Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
         Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
         Active.scan_task = TaskScan()
@@ -115,16 +115,6 @@ class ManagerApp(App):
         self.screens[index] = screen
         sm = self.root.ids.sm
         sm.switch_to(screen, direction='left')
-        if screen.name is 'Settings':
-            try:
-                Active.confList = Active.conf_task.get_config(Active.client)
-            except ConfigException as ce:
-                popup = Popup(size_hint=(None, None), size=(400, 150))
-                popup.add_widget(Label(text=ce.value))
-                popup.bind(on_press=popup.dismiss)
-                popup.title = ce.title
-                popup.open()
-                return
         self.current_title = screen.name
 
     def register(self, user, pwd, pwd_verif):
@@ -202,9 +192,9 @@ class ManagerApp(App):
                         popup.bind(on_press=popup.dismiss)
                         popup.title = "Wrong Credentials"
                         popup.open()
-                    except ConnectionError as ce:
+                    except ConnectionError:
                         popup = Popup(size_hint=(None, None), size=(300, 150))
-                        popup.add_widget(Label(text=ce.value))
+                        popup.add_widget(Label(text="Unable to connect to host"))
                         popup.bind(on_press=popup.dismiss)
                         popup.title = "Connection Error"
                         popup.open()
@@ -216,8 +206,15 @@ class ManagerApp(App):
                 popup.bind(on_press=popup.dismiss)
                 popup.title = "No connectivity"
                 popup.open()
-                return
         print("Connected")
+        try:
+            Active.conf_task.get_config(Active.client)
+        except ConfigException as ce:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=ce.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = ce.title
+            popup.open()
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -265,12 +262,12 @@ class ManagerApp(App):
         self.load_screen(self.index)
 
     def getConf(self, section, entry):
-        return Active.confList.get_value(Active.confList, section, entry)
+        return Active.confList.get_value(section, entry)
 
     def setConf(self, *kwargs):
         for arg in kwargs:
             if arg.__class__ is CfgCheckBox:
-                if arg.active is not bool(Active.confList.get_value(Active.confList, arg.value1, arg.value2)):
+                if arg.active is not bool(Active.confList.get_value(arg.value1, arg.value2)):
                     try:
                         Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, int(arg.active))
                     except ConfigException as ce:
@@ -279,10 +276,10 @@ class ManagerApp(App):
                         popup.bind(on_press=popup.dismiss)
                         popup.title = ce.title
                         popup.open()
-                        return
-                    Active.confList.set_config(Active.confList, arg.value1, arg.value2, arg.active)
+
+                    Active.confList.set_config(arg.value1, arg.value2, arg.active)
             else:
-                if str(arg.text) != Active.confList.get_value(Active.confList, arg.value1, arg.value2):
+                if str(arg.text) != Active.confList.get_value(arg.value1, arg.value2):
                     try:
                         Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, arg.text)
                     except ConfigException as ce:
@@ -291,8 +288,8 @@ class ManagerApp(App):
                         popup.bind(on_press=popup.dismiss)
                         popup.title = ce.title
                         popup.open()
-                        return
-                    Active.confList.set_config(Active.confList, arg.value1, arg.value2, arg.text)
+
+                    Active.confList.set_config(arg.value1, arg.value2, arg.text)
 
     def addscan(self, path, is_temp, size, age, *args):
         try:
@@ -308,7 +305,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
-            return
+
         tmp = ScanElem(path)
         tmp.is_temp = 0 if is_temp is 'normal' else 1
         opt = ''
@@ -326,7 +323,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = se.title
             popup.open()
-            return
+
         Active.changed['sc'] = 1
         self.get_index("Scanner")
         self.load_screen(self.index)
@@ -341,7 +338,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
-            return
+
         try:
             Active.qr_task.add_to_qr(Active.client, filename)
         except QrException as qr:
@@ -350,7 +347,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = qr.title
             popup.open()
-            return
+
         Active.changed['qr'] = 1
         self.get_index("Quarantine")
         self.load_screen(self.index)
