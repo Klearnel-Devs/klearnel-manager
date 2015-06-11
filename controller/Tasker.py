@@ -79,7 +79,7 @@ class TaskScan(Tasker):
         finally:
             net.s.close()
 
-    def mod_from_scan(self, client, path, options):
+    def mod_from_scan(self, client, path, options, tmp):
         net = Networker()
         try:
             net.connect_to(client.name)
@@ -89,18 +89,16 @@ class TaskScan(Tasker):
             self.send_credentials(net, client)
         except ConnectionRefusedError:
             raise ScanException("Unable to authentify with " + client.name)
-            net.s.close()
         try:
             net.send_val(str(SCAN_MOD) + ":" + str(len(new_elem.path)))
-            net.send_val(new_elem.path)
-            net.send_val(new_elem.get_options())
-            net.send_val(new_elem.is_temp)
+            net.send_val(path)
+            net.send_val(options)
+            net.send_val(str(tmp))
         except ConnectionError:
             raise ScanException("Unable to change options for " + path +
-                            "\n from scanner on " + client.name)
+                                "\n from scanner on " + client.name)
         finally:
             net.s.close()
-
 
     def rm_from_scan(self, client, path):
         net = Networker()
@@ -364,31 +362,31 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_log_age(int(result))
+            Active.confList.gbl['log_age'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("small", int(result))
+            Active.confList.gbl['small'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("medium", int(result))
+            Active.confList.gbl['medium'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_size_def("large", int(result))
+            Active.confList.gbl['large'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("sma", int(result))
+            Active.confList.sma['exp_def'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
@@ -406,7 +404,7 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("med", int(result))
+            Active.confList.med['exp_def'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
@@ -424,7 +422,7 @@ class TaskConfig(Tasker):
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
-            Active.confList.set_exp_def("lrg", int(result))
+            Active.confList.lrg['exp_def'] = int(result)
             net.send_ack(net.SOCK_ACK)
 
             size = net.get_data(20)
@@ -456,6 +454,14 @@ class TaskConfig(Tasker):
             raise ConfigException("Unable to authentify with " + client.name)
             net.s.close()
         try:
+            if section is 'gbl':
+                section = 'global'
+            elif section is 'sma':
+                section = 'small'
+            elif section is 'med':
+                section = 'medium'
+            elif section is 'lrg':
+                section = 'large'
             net.send_val(str(CONF_MOD) + ":0")
             net.send_val(str(len(section)))
             net.send_val(section)

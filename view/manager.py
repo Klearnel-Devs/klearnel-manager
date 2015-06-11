@@ -192,12 +192,14 @@ class ManagerApp(App):
                         popup.bind(on_press=popup.dismiss)
                         popup.title = "Wrong Credentials"
                         popup.open()
+                        return
                     except ConnectionError:
                         popup = Popup(size_hint=(None, None), size=(300, 150))
                         popup.add_widget(Label(text="Unable to connect to host"))
                         popup.bind(on_press=popup.dismiss)
                         popup.title = "Connection Error"
                         popup.open()
+                        return
                     Active.client = Active.cl.c_list[x]
                     break
             except NoConnectivity:
@@ -206,7 +208,7 @@ class ManagerApp(App):
                 popup.bind(on_press=popup.dismiss)
                 popup.title = "No connectivity"
                 popup.open()
-        print("Connected")
+                return
         try:
             Active.conf_task.get_config(Active.client)
         except ConfigException as ce:
@@ -215,6 +217,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = ce.title
             popup.open()
+            return
         self.get_index('Scanner')
         self.load_screen(self.index)
 
@@ -265,31 +268,44 @@ class ManagerApp(App):
         return Active.confList.get_value(section, entry)
 
     def setConf(self, *kwargs):
+        modified = False
         for arg in kwargs:
             if arg.__class__ is CfgCheckBox:
                 if arg.active is not bool(Active.confList.get_value(arg.value1, arg.value2)):
+                    tmp = Active.confList
+                    Active.confList.set_config(arg.value1, arg.value2, int(arg.active))
                     try:
-                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, int(arg.active))
+                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, str(int(arg.active)))
                     except ConfigException as ce:
+                        Active.confList = tmp
                         popup = Popup(size_hint=(None, None), size=(400, 150))
                         popup.add_widget(Label(text=ce.value))
                         popup.bind(on_press=popup.dismiss)
                         popup.title = ce.title
                         popup.open()
-
-                    Active.confList.set_config(arg.value1, arg.value2, arg.active)
+                        return
+                    modified = True
             else:
                 if str(arg.text) != Active.confList.get_value(arg.value1, arg.value2):
+                    tmp = Active.confList
+                    Active.confList.set_config(arg.value1, arg.value2, arg.text)
                     try:
-                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2, arg.text)
+                        Active.conf_task.send_conf_mod(Active.client, arg.value1, arg.value2,
+                                                       Active.confList.get_value_res(arg.value1, arg.value2))
                     except ConfigException as ce:
+                        Active.confList = tmp
                         popup = Popup(size_hint=(None, None), size=(400, 150))
                         popup.add_widget(Label(text=ce.value))
                         popup.bind(on_press=popup.dismiss)
                         popup.title = ce.title
                         popup.open()
-
-                    Active.confList.set_config(arg.value1, arg.value2, arg.text)
+                        return
+                    modified = True
+        if modified:
+            popup = Popup(title='Configuration Saved', size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Configuration settings have been saved"))
+            popup.bind(on_press=popup.dismiss)
+            popup.open()
 
     def addscan(self, path, is_temp, size, age, *args):
         try:
@@ -305,6 +321,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
+            return
 
         tmp = ScanElem(path)
         tmp.is_temp = 0 if is_temp is 'normal' else 1
@@ -323,7 +340,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = se.title
             popup.open()
-
+            return
         Active.changed['sc'] = 1
         self.get_index("Scanner")
         self.load_screen(self.index)
@@ -338,7 +355,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = "Input Error"
             popup.open()
-
+            return
         try:
             Active.qr_task.add_to_qr(Active.client, filename)
         except QrException as qr:
@@ -347,7 +364,7 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.title = qr.title
             popup.open()
-
+            return
         Active.changed['qr'] = 1
         self.get_index("Quarantine")
         self.load_screen(self.index)
@@ -371,10 +388,8 @@ class ManagerApp(App):
             elif ids is 'DEL_F_OLD' and state is 'down':
                 Active.scanList[x].options['BACKUP_OLD'] = '0'
         try:
-            if ids is 'is_temp':
-                Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].is_temp)
-            else:
-                Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options)
+            Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options,
+                                           Active.scanList[x].is_temp)
         except ScanException as se:
             popup = Popup(size_hint=(None, None), size=(500, 150))
             popup.add_widget(Label(text=se.value))
@@ -383,6 +398,7 @@ class ManagerApp(App):
             popup.open()
             btn.state = 'normal' if state is 'down' else 'down'
             Active.scanList[x] = tmp
+            return
         print(Active.scanList[x].get_options())
 
 if __name__ == '__main__':
