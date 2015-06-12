@@ -261,6 +261,7 @@ class ManagerApp(App):
         sys.exit(0)
 
     def logout(self):
+
         self.get_index("Login")
         self.load_screen(self.index)
 
@@ -388,7 +389,7 @@ class ManagerApp(App):
             elif ids is 'DEL_F_OLD' and state is 'down':
                 Active.scanList[x].options['BACKUP_OLD'] = '0'
         try:
-            Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options,
+            Active.scan_task.mod_from_scan(Active.client, path, Active.scanList[x].get_options(),
                                            Active.scanList[x].is_temp)
         except ScanException as se:
             popup = Popup(size_hint=(None, None), size=(500, 150))

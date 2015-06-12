@@ -50,14 +50,7 @@ class TaskScan(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise ScanException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise ScanException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
             net.send_val(new_elem.get_options())
@@ -74,8 +67,12 @@ class TaskScan(Tasker):
             print(str(len(str(new_elem.max_age))))
             net.send_val(new_elem.max_age)
             print(str(new_elem.max_age))
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise ScanException("Unable to add " + new_elem.path + "\nto scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
         finally:
             net.s.close()
 
@@ -83,20 +80,18 @@ class TaskScan(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise ScanException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise ScanException("Unable to authentify with " + client.name)
-        try:
-            net.send_val(str(SCAN_MOD) + ":" + str(len(new_elem.path)))
+            net.send_val(str(SCAN_MOD) + ":" + str(len(path)))
             net.send_val(path)
             net.send_val(options)
             net.send_val(str(tmp))
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise ScanException("Unable to change options for " + path +
                                 "\n from scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
         finally:
             net.s.close()
 
@@ -104,18 +99,15 @@ class TaskScan(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise ScanException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise ScanException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(SCAN_RM) + ":" + str(len(path)))
             net.send_val(path)
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise ScanException("Unable to remove " + path + " from scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
         finally:
             net.s.close()
 
@@ -126,17 +118,9 @@ class TaskScan(Tasker):
         try:
             net.connect_to(client.name)
             print("2")
-        except NoConnectivity:
-            raise ScanException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
             print("3")
-        except ConnectionRefusedError:
-            raise ScanException("Unable to authentify with " + client.name)
-            net.s.close()
-        print("4")
-        scan_list = list()
-        try:
+            scan_list = list()
             print(str(SCAN_LIST) + ":0")
             net.send_val(str(SCAN_LIST) + ":0")
             print(str(SCAN_LIST) + ":0")
@@ -190,7 +174,10 @@ class TaskScan(Tasker):
 
                 scan_list.append(scan_elem)
                 i += 1
-
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
         except ConnectionError:
             raise ScanException("Unable to get list from scanner on " + client.name)
         finally:
@@ -204,18 +191,14 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise QrException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(QR_ADD) + ":" + str(len(path)))
             net.send_val(path)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
-            # net.s.close()
             raise QrException("Unable to add " + path + " to quarantine on " + client.name)
         finally:
             net.s.close()
@@ -224,16 +207,13 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise QrException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(QR_RM) + ":" + str(len(filename)))
             net.send_val(filename)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to remove " + filename + " from quarantine on " + client.name)
         finally:
@@ -243,16 +223,13 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise QrException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(QR_REST) + ":" + str(len(filename)))
             net.send_val(filename)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to restore " + filename + " from quarantine on " + client.name)
         finally:
@@ -262,15 +239,8 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise QrException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        qr_list = list()
-        try:
+            qr_list = list()
             net.send_val(str(QR_LIST) + ":0")
             result = None
             i = 0
@@ -304,6 +274,10 @@ class TaskQR(Tasker):
                 qr_list.append(qr_elem)
                 i += 1
 
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to get list from quarantine on " + client.name)
         finally:
@@ -318,17 +292,14 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise QrException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             net.send_val(str(QR_RM_ALL) + ":0")
         except ConnectionError:
             raise Exception("Unable to remove all elements in the quarantine on " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
         finally:
             net.s.close()
 
@@ -336,15 +307,12 @@ class TaskQR(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
+            self.send_credentials(net, client)
+            net.send_val(str(QR_REST_ALL) + ":0")
         except NoConnectivity:
             raise QrException("Unable to connect to " + client.name)
-        try:
-            self.send_credentials(net, client)
         except ConnectionRefusedError:
             raise QrException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
-            net.send_val(str(QR_REST_ALL) + ":0")
         except ConnectionError:
             raise Exception("Unable to restore all elements from the quarantine on " + client.name)
         finally:
@@ -354,9 +322,9 @@ class TaskQR(Tasker):
 class TaskConfig(Tasker):
     def get_config(self, client):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(CONF_LIST) + ":0")
 
             size = net.get_data(20)
@@ -436,7 +404,10 @@ class TaskConfig(Tasker):
             result = net.get_data(int(size))
             Active.confList.lrg['location'] = result
             net.send_ack(net.SOCK_ACK)
-
+        except NoConnectivity:
+            raise ConfigException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise ConfigException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise ConfigException("Unable to get configurations from " + client.name)
         finally:
@@ -446,14 +417,7 @@ class TaskConfig(Tasker):
         net = Networker()
         try:
             net.connect_to(client.name)
-        except NoConnectivity:
-            raise ConfigException("Unable to connect to " + client.name)
-        try:
             self.send_credentials(net, client)
-        except ConnectionRefusedError:
-            raise ConfigException("Unable to authentify with " + client.name)
-            net.s.close()
-        try:
             if section is 'gbl':
                 section = 'global'
             elif section is 'sma':
@@ -471,6 +435,10 @@ class TaskConfig(Tasker):
             net.send_val(new_value)
             if net.get_ack() != net.SOCK_ACK:
                 raise ConnectionError("Operation canceled")
+        except ConnectionRefusedError:
+            raise ConfigException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise ConfigException("Unable to connect to " + client.name)
         except ConnectionError:
             raise ConfigException("Unable to modify "+key+" with: "+new_value)
         finally:
