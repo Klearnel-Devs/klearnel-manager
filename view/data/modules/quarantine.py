@@ -23,6 +23,7 @@ from view.data.modules.quarantine import *
 from model.Exceptions import QrException
 
 update = 0
+empty = 0
 
 class QrCompositeListItem(CompositeListItem):
     text = ''
@@ -121,6 +122,15 @@ class QuarantineViewModal(BoxLayout):
             popup.bind(on_press=popup.dismiss)
             popup.title = qr.title
             popup.open()
+        except EmptyListException as ee:
+            global empty
+            if empty is 0:
+                empty = 1
+                popup = Popup(size_hint=(None, None), size=(400, 150))
+                popup.add_widget(Label(text=ee.value))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = ee.title
+                popup.open()
         for x in range(0, len(Active.qrList)):
             self.qrdata.append({'filename': Active.qrList[x].f_name,
                                 'old_path': Active.qrList[x].o_path})
@@ -134,10 +144,11 @@ class QuarantineViewModal(BoxLayout):
         super(QuarantineViewModal, self).__init__(**kwargs)
         self.list_view = ListView(adapter=self.list_adapter)
         self.add_widget(self.list_view)
-
-        detail_view = QrDetailView(
-            qr_name=self.list_adapter.selection[0].text,
-            size_hint=(.6, 1.0))
+        if len(self.qrdata) is 0:
+            detail_view = QrDetailView(qr_name="List is empty", size_hint=(.6, 1.0))
+        else:
+            detail_view = QrDetailView(qr_name=self.list_adapter.selection[0].text,
+                                       size_hint=(.6, 1.0))
 
         self.list_adapter.bind(
             on_selection_change=detail_view.qr_changed)
@@ -151,11 +162,9 @@ class QuarantineViewModal(BoxLayout):
     def callback2(self, dt):
         global update
         if update != 0:
-            print("Updating")
             update = 0
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
         if Active.changed['qr'] != 0:
-            print("Adding")
             Active.changed['qr'] = 0
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
 
@@ -169,6 +178,15 @@ class QuarantineViewModal(BoxLayout):
             popup.title = qr.title
             popup.open()
             return
+        except EmptyListException as ee:
+            global empty
+            if empty is 0:
+                empty = 1
+                popup = Popup(size_hint=(None, None), size=(400, 150))
+                popup.add_widget(Label(text=ee.value))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = ee.title
+                popup.open()
         self.qrdata.clear()
         for x in range(0, len(Active.qrList)):
                 self.qrdata.append({'filename': Active.qrList[x].f_name,

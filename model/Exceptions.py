@@ -14,6 +14,14 @@ class NoConnectivity(Exception):
     def __str__(self):
         return repr(self.value)
 
+class EmptyListException(Exception):
+    title = 'Empty List'
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
 class EmptyFields(Exception):
     def __init__(self, value):
         self.value = value

@@ -9,11 +9,12 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.button import Button, ButtonBehavior
 from kivy.uix.togglebutton import ToggleButton
-from model.Exceptions import ScanException
+from model.Exceptions import ScanException, EmptyListException
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
 
 update = 0
+empty = 0
 
 class ScCompositeListItem(CompositeListItem):
     text = ''
@@ -107,7 +108,6 @@ class ScDetailView(BoxLayout):
                     self.add_widget(box6)
                     self.add_widget(Button(text="Remove From Scanner",
                                            on_press=lambda a: self.deleteItem(Active.scanList[x], x)))
-                    print(Active.scanList[x].get_options())
                     break
 
     def callback(self):
@@ -156,6 +156,15 @@ class ScannerViewModal(BoxLayout):
             popup.title = se.title
             popup.open()
             return
+        except EmptyListException as ee:
+            global empty
+            if empty is 0:
+                empty = 1
+                popup = Popup(size_hint=(None, None), size=(400, 150))
+                popup.add_widget(Label(text=ee.value))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = ee.title
+                popup.open()
         for x in range(0, len(Active.scanList)):
             self.scdata.append({'path': Active.scanList[x].path,
                                 'options': Active.scanList[x].options})
@@ -169,8 +178,10 @@ class ScannerViewModal(BoxLayout):
         super(ScannerViewModal, self).__init__(**kwargs)
         self.list_view = ListView(adapter=self.list_adapter)
         self.add_widget(self.list_view)
-
-        detail_view = ScDetailView(sc_name=self.list_adapter.selection[0].text, size_hint=(.6, 1.0))
+        if len(self.scdata) is 0:
+            detail_view = ScDetailView(sc_name="List is empty", size_hint=(.6, 1.0))
+        else:
+            detail_view = ScDetailView(sc_name=self.list_adapter.selection[0].text, size_hint=(.6, 1.0))
 
         self.list_adapter.bind(
             on_selection_change=detail_view.sc_changed)
@@ -184,16 +195,13 @@ class ScannerViewModal(BoxLayout):
     def callback2(self, dt):
         global update
         if update != 0:
-            print("Updating")
             update = 0
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
         if Active.changed['sc'] != 0:
-            print("Adding")
             Active.changed['sc'] = 0
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
 
     def update_list(self):
-        print('Called')
         try:
             Active.scanList = Active.scan_task.get_scan_list(Active.client)
         except ScanException as se:
@@ -203,6 +211,15 @@ class ScannerViewModal(BoxLayout):
             popup.title = se.title
             popup.open()
             return
+        except EmptyListException as ee:
+            global empty
+            if empty is 0:
+                empty = 1
+                popup = Popup(size_hint=(None, None), size=(400, 150))
+                popup.add_widget(Label(text=ee.value))
+                popup.bind(on_press=popup.dismiss)
+                popup.title = ee.title
+                popup.open()
         self.scdata.clear()
         for x in range(0, len(Active.scanList)):
             self.scdata.append({'path': Active.scanList[x].path,

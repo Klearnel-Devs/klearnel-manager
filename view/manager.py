@@ -400,7 +400,6 @@ class ManagerApp(App):
             btn.state = 'normal' if state is 'down' else 'down'
             Active.scanList[x] = tmp
             return
-        print(Active.scanList[x].get_options())
 
 if __name__ == '__main__':
     ManagerApp().run()

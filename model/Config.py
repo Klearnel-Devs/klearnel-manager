@@ -30,7 +30,6 @@ class Config:
 
     def set_size_def(self, key, value):
         self.gbl[key] = value * pow(1024, 2)
-        print(str(self.gbl[key]))
 
     def get_size_def(self, key):
         return self.gbl[key] // pow(1024, 2)
@@ -70,11 +69,9 @@ class Config:
         if key == 'exp_def':
             self.set_exp_def(section, int(value))
         if section == 'gbl':
-            print("Global")
             if key == 'log_age':
                 self.set_log_age(int(value))
             else:
-                print("Setting Def Key for" + key + " : " + value)
                 self.set_size_def(key, int(value))
         if section == 'sma':
             if key == 'backup':
