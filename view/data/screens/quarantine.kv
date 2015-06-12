@@ -37,13 +37,11 @@ ManagerScreen:
                 size_hint_y: None
                 size: (1.0, 1.0)
 
-        BoxLayout:
+
+        Button:
+            text: 'Add File to Quarantine'
             size_hint_y: None
             size: (root.width, root.height/20)
-            orientation: 'horizontal'
-            Button:
-                text: 'Add'
-            Button:
-                text: 'Restore'
-            Button:
-                text: 'Delete Permanently'
+            on_press:
+                app.get_index('addquar')
+                app.load_screen(app.index)

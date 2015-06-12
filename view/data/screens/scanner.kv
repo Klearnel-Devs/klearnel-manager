@@ -1,3 +1,7 @@
+<ScToggleButton@ToggleButton>
+    on_release:
+        app.mod_sc(self, self.value, self.id, self.state)
+
 ManagerScreen:
     name: 'Scanner'
     fullscreen: True
@@ -34,21 +38,17 @@ ManagerScreen:
                     on_press:
                         app.go_screen('Quarantine')
         ScannerViewModal:
-            size_hint_y: None
-            size: (root.width, (root.height - (root.height/20) - (root.height/20) - 20 ))
             id: svm
             orientation: 'vertical'
             ListView:
                 id: lv2
                 size_hint_y: None
-                size: (1.0, 0.6)
-        BoxLayout:
+                size: (1.0, 1.0)
+
+        Button:
+            text: 'Add Scanner Item'
             size_hint_y: None
             size: (root.width, root.height/20)
-            orientation: 'horizontal'
-            Button:
-                text: 'Add'
-            Button:
-                text: 'Modify'
-            Button:
-                text: 'Delete'
+            on_press:
+                app.get_index('addscan')
+                app.load_screen(app.index)
