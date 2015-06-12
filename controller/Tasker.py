@@ -1,8 +1,10 @@
 __author__ = 'antoine'
 from controller.Networker import Networker
-from model.Client import ClientList
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
+from model.Exceptions import *
+from controller import Active
+from socket import SHUT_RDWR
 
 KL_EXIT = -1
 QR_ADD = 1
@@ -16,7 +18,10 @@ QR_LIST_RECALL = 8
 SCAN_ADD = 10
 SCAN_RM = 11
 SCAN_LIST = 12
-SCAN_OPTIONS = 11
+SCAN_MOD = 13
+CONF_LIST = 20
+CONF_MOD = 21
+NET_CONNEC = 30
 
 
 class Tasker:
@@ -44,42 +49,77 @@ class TaskGlobal(Tasker):
 class TaskScan(Tasker):
     def add_to_scan(self, client, new_elem):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
-            net.send_val(new_elem.options)
-            net.send_val(str(len(new_elem.back_limit_size)))
-            net.send_val(new_elem.back_limit_size)
-            net.send_val(str(len(new_elem.del_limit_size)))
-            net.send_val(new_elem.del_limit_size)
-            net.send_val(new_elem.is_temp)
-            net.send_val(str(len(new_elem.max_age)))
-            net.send_val(new_elem.max_age)
+            net.send_val(new_elem.get_options())
+
+            net.send_val(str(len(str(new_elem.back_limit_size))))
+            net.send_val(str(new_elem.back_limit_size))
+
+            net.send_val(str(len(str(new_elem.del_limit_size))))
+            net.send_val(str(new_elem.del_limit_size))
+
+            net.send_val(str(new_elem.is_temp))
+
+            net.send_val(str(len(str(new_elem.max_age))))
+            net.send_val(str(new_elem.max_age))
+
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise ScanException("Unable to add " + new_elem.path + "\nto scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to add " + new_elem.path + " to scanner on " + client.name)
-        net.s.close()
+
+    def mod_from_scan(self, client, path, options, tmp):
+        net = Networker()
+        try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
+            net.send_val(str(SCAN_MOD) + ":" + str(len(path)))
+            net.send_val(path)
+            net.send_val(options)
+            net.send_val(str(tmp))
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
+        except ConnectionError:
+            raise ScanException("Unable to change options for " + path +
+                                "\n from scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
+            net.s.close()
 
     def rm_from_scan(self, client, path):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(SCAN_RM) + ":" + str(len(path)))
             net.send_val(path)
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise ScanException("Unable to remove " + path + " from scanner on " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to remove " + path + " from scanner on " + client.name)
-        net.s.close()
 
     def get_scan_list(self, client):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
-        scan_list = list()
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
+            scan_list = list()
             net.send_val(str(SCAN_LIST) + ":0")
             result = None
             i = 0
@@ -87,17 +127,18 @@ class TaskScan(Tasker):
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 if size == "EOF":
-                    break
+                    if i is 0:
+                        raise EmptyListException("Scanner List is Empty")
+                    else:
+                        break
                 result = net.get_data(int(size))
                 scan_elem = ScanElem(result)
                 net.send_ack(net.SOCK_ACK)
-
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
                 scan_elem.set_options(result)
                 net.send_ack(net.SOCK_ACK)
-
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
@@ -124,57 +165,76 @@ class TaskScan(Tasker):
 
                 scan_list.append(scan_elem)
                 i += 1
-
+        except ConnectionRefusedError:
+            raise ScanException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise ScanException("Unable to connect to " + client.name)
         except ConnectionError:
+            raise ScanException("Unable to get list from scanner on " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to get list from scanner on " + client.name)
-        net.s.close()
         return scan_list
 
 
 class TaskQR(Tasker):
     def add_to_qr(self, client, path):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(QR_ADD) + ":" + str(len(path)))
             net.send_val(path)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise QrException("Unable to add " + path + " to quarantine on " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to add " + path + " to quarantine on " + client.name)
-        net.s.close()
 
     def rm_from_qr(self, client, filename):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(QR_RM) + ":" + str(len(filename)))
             net.send_val(filename)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise QrException("Unable to remove " + filename + " from quarantine on " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to remove " + filename + " from quarantine on " + client.name)
-        net.s.close()
 
     def restore_from_qr(self, client, filename):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(QR_REST) + ":" + str(len(filename)))
             net.send_val(filename)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise QrException("Unable to restore " + filename + " from quarantine on " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to restore " + filename + " from quarantine on " + client.name)
-        net.s.close()
 
     def get_qr_list(self, client):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
-        qr_list = list()
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
+            qr_list = list()
             net.send_val(str(QR_LIST) + ":0")
             result = None
             i = 0
@@ -182,7 +242,10 @@ class TaskQR(Tasker):
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 if size == "EOF":
-                    break
+                    if i is 0:
+                        raise EmptyListException("Quarantine List is Empty")
+                    else:
+                        break
                 result = net.get_data(int(size))
                 qr_elem = QrElem(result)
                 net.send_ack(net.SOCK_ACK)
@@ -208,10 +271,15 @@ class TaskQR(Tasker):
                 qr_list.append(qr_elem)
                 i += 1
 
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
+            raise QrException("Unable to get list from quarantine on " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
             net.s.close()
-            raise Exception("Unable to get list from quarantine on " + client.name)
-        net.s.close()
 
         return qr_list
 
@@ -220,57 +288,171 @@ class TaskQR(Tasker):
 
     def rm_all_from_qr(self, client):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(QR_RM_ALL) + ":0")
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to remove all elements in the quarantine on " + client.name)
-        net.s.close()
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
+            net.s.close()
 
     def restore_all_from_qr(self, client):
         net = Networker()
-        net.connect_to(client.name)
-        self.send_credentials(net, client)
         try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
             net.send_val(str(QR_REST_ALL) + ":0")
+        except NoConnectivity:
+            raise QrException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
-            net.s.close()
             raise Exception("Unable to restore all elements from the quarantine on " + client.name)
-        net.s.close()
+        finally:
+            net.s.shutdown(SHUT_RDWR)
+            net.s.close()
 
+
+class TaskConfig(Tasker):
+    def get_config(self, client):
+        net = Networker()
+        try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
+            net.send_val(str(CONF_LIST) + ":0")
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.gbl['log_age'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.gbl['small'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.gbl['medium'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.gbl['large'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.sma['exp_def'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.sma['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.sma['location'] = result
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.med['exp_def'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.med['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.med['location'] = result
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.lrg['exp_def'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.lrg['backup'] = int(result)
+            net.send_ack(net.SOCK_ACK)
+
+            size = net.get_data(20)
+            net.send_ack(net.SOCK_ACK)
+            result = net.get_data(int(size))
+            Active.confList.lrg['location'] = result
+            net.send_ack(net.SOCK_ACK)
+        except NoConnectivity:
+            raise ConfigException("Unable to connect to " + client.name)
+        except ConnectionRefusedError:
+            raise ConfigException("Unable to authentify with " + client.name)
+        except ConnectionError:
+            raise ConfigException("Unable to get configurations from " + client.name)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
+            net.s.close()
+
+    def send_conf_mod(self, client, section, key, new_value):
+        net = Networker()
+        try:
+            net.connect_to(client.name)
+            self.send_credentials(net, client)
+            if section is 'gbl':
+                section = 'global'
+            elif section is 'sma':
+                section = 'small'
+            elif section is 'med':
+                section = 'medium'
+            elif section is 'lrg':
+                section = 'large'
+            net.send_val(str(CONF_MOD) + ":0")
+            net.send_val(str(len(section)))
+            net.send_val(section)
+            net.send_val(str(len(key)))
+            net.send_val(key)
+            net.send_val(str(len(new_value)))
+            net.send_val(new_value)
+            if net.get_ack() != net.SOCK_ACK:
+                raise ConnectionError("Operation canceled")
+        except ConnectionRefusedError:
+            raise ConfigException("Unable to authentify with " + client.name)
+        except NoConnectivity:
+            raise ConfigException("Unable to connect to " + client.name)
+        except ConnectionError:
+            raise ConfigException("Unable to modify "+key+" with: "+new_value)
+        finally:
+            net.s.shutdown(SHUT_RDWR)
+            net.s.close()
 
 if __name__ == "__main__":
-    cl = ClientList()
-    cl.load_list()
-    qr_task = TaskQR()
-    scan_task = TaskScan()
-    scan_e = ScanElem("/home/antoine/Images")
-    scan_e.options = "1011000000"
-    scan_e.back_limit_size = "150.0"
-    scan_e.del_limit_size = "0.0"
-    scan_e.is_temp = "0"
-    scan_e.max_age = "15"
-    # scan_task.add_to_scan(cl.c_list[0], scan_e)
-    # scan_task.rm_from_scan(cl.c_list[0], "/home/antoine/Documents")
-    """scanList = scan_task.get_scan_list(cl.c_list[0])
-    for scan_elem in scanList:
-        print("Elem "+scan_elem.path)
-        print(" - Options: "+scan_elem.options)
-        print(" - Back limit size: "+scan_elem.back_limit_size)
-        print(" - Del limit size: "+scan_elem.del_limit_size)
-        print(" - Temp folder ? "+("true" if (scan_elem.is_temp == 1) else "false"))
-        print(" - Max Age: "+scan_elem.max_age)"""
-    """qrList = qr_task.get_qr_list(cl.c_list[0])
-    for qrElem in qrList:
-        print("Elem "+qrElem.f_name)
-        print(" - Old path: "+qrElem.o_path)
-        print(" - Entry date: "+qrElem.d_begin)
-        print(" - Expire date: "+qrElem.d_expire)"""
-    # qr_task.restore_from_qr(cl.c_list[0], "toto.txt")
-    """qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/toto.txt")
-    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/tata.txt")
-    qr_task.add_to_qr(cl.c_list[0], "/home/antoine/Documents/trololo.txt")"""
-    # qr_task.rm_all_from_qr(cl.c_list[0])
-    qr_task.restore_all_from_qr(cl.c_list[0])
+    from model.Client import Client, ClientList
+    from model.Config import Config
+    from controller import Active
+    Active.cl = ClientList()
+    Active.confList = Config()
+    Active.cl.load_list()
+    conf_task = TaskConfig()
+    conf_task.get_config(Active.cl.c_list[0])
+    print("Value of SMALL -> Location: "+Active.confList.sma['location'])
