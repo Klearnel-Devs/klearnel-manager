@@ -1,4 +1,7 @@
-__author__ = 'Derek'
+## @package view
+#   Defines classes to be displayed by the GUI
+#
+# @author Antoine Ceyssens <a.ceyssens@nukama.be> & Derek Van Hove <d.vanhove@nukama.be>
 from kivy.uix.label import Label
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton, ListView, CompositeListItem, ListItemLabel
@@ -13,22 +16,29 @@ from model.Exceptions import ScanException, EmptyListException
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
 
+## Variable used to determine whether to schedule refresh event
 update = 0
+## Variable used to avoid multiple instances of warning whether list is empty
 empty = 0
 
+## Extends CompositeListItem to add text attribute
 class ScCompositeListItem(CompositeListItem):
     text = ''
 
-class ScButton(ListItemButton):
-    def on_press(self):
-        return False
+## Defined in Kivy files
+class ScCheckBox(CheckBox, ListItemLabel):
+    def __init__(self, **kwargs):
+        super(ScCheckBox, self).__init__(**kwargs)
 
+## Defined in Kivy files
 class ScLabel(ListItemLabel):
     pass
 
+## Defined in Kivy files
 class AddScannerElementButton(Button):
     pass
 
+## Extends ToggleButton to add value attribute
 class ScToggleButton(ToggleButton):
     value = StringProperty('', allownone=True)
 
@@ -36,10 +46,16 @@ class ScToggleButton(ToggleButton):
         self.value = kwargs.get('value', '')
         super(ScToggleButton, self).__init__(**kwargs)
 
+class HeaderBox(BoxLayout):
+    pass
+
+## The view of an individual scanner item
 class ScDetailView(BoxLayout):
+    ## Quarantine items name
     sc_name = StringProperty('', allownone=True)
     obj = None
 
+    ## Constructor
     def __init__(self, **kwargs):
         self.sc_name = kwargs.get('sc_name', '')
         super(ScDetailView, self).__init__(**kwargs)
@@ -48,6 +64,7 @@ class ScDetailView(BoxLayout):
         if self.sc_name:
             self.redraw()
 
+    ## Redraws the detail view
     def redraw(self, *args):
         self.clear_widgets()
         if self.sc_name:
@@ -110,9 +127,14 @@ class ScDetailView(BoxLayout):
                                            on_press=lambda a: self.deleteItem(Active.scanList[x], x)))
                     break
 
+    ## Callback on clock schedule to redraw
     def callback(self):
         Clock.schedule_once(lambda dt: self.redraw(), 0.5)
 
+    ## Validates deletion of item from Scanner list
+    # @param item The item to delete
+    # @param index The index found
+    # @exception ScanException
     def deleteItem(self, item, index):
         try:
             Active.scan_task.rm_from_scan(Active.client, item.path)
@@ -127,6 +149,9 @@ class ScDetailView(BoxLayout):
         global update
         update = 1
 
+    ## Determines whether to redraw if selection has changed
+    # @param list_adapter
+    # @param args
     def sc_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
             self.sc_name = None
@@ -139,9 +164,12 @@ class ScDetailView(BoxLayout):
                 self.sc_name = selected_object.text
         self.redraw()
 
+## Class containing all necessary components for creating a dynamic list view
 class ScannerViewModal(BoxLayout):
-    data = ListProperty()
 
+    ## Constructor
+    # @exception ScanException
+    # @exception EmptyListException
     def __init__(self, **kwargs):
         self.scdata = list()
         self.orientation = 'vertical'
@@ -177,6 +205,7 @@ class ScannerViewModal(BoxLayout):
 
         super(ScannerViewModal, self).__init__(**kwargs)
         self.list_view = ListView(adapter=self.list_adapter)
+        self.add_widget(HeaderBox())
         self.add_widget(self.list_view)
         if len(self.scdata) is 0:
             detail_view = ScDetailView(sc_name="List is empty", size_hint=(.6, 1.0))
@@ -189,9 +218,11 @@ class ScannerViewModal(BoxLayout):
         Clock.schedule_interval(self.callback, 60)
         Clock.schedule_interval(self.callback2, 5)
 
+    ## Callback on clock schedule to update list
     def callback(self, dt):
         self.update_list()
 
+    ## Callback on clock schedule to update list
     def callback2(self, dt):
         global update
         if update != 0:
@@ -201,6 +232,9 @@ class ScannerViewModal(BoxLayout):
             Active.changed['sc'] = 0
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
 
+    ## Updates the Scanner list
+    # @exception ScanException
+    # @exception EmptyListException
     def update_list(self):
         try:
             Active.scanList = Active.scan_task.get_scan_list(Active.client)
@@ -228,6 +262,7 @@ class ScannerViewModal(BoxLayout):
         if hasattr(self.list_view, '_reset_spopulate'):
             self.list_view._reset_spopulate()
 
+    ## The args converter
     def formatter(self, rowindex, scdata):
         return {'text': scdata['path'],
                 'size_hint_y': None,
@@ -235,31 +270,40 @@ class ScannerViewModal(BoxLayout):
                 'cls_dicts': [{'cls': ListItemButton,
                                'kwargs': {'text': scdata['path'],
                                           'size_hint_x': 0.5}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BR_S',
-                                          'state': 'down' if bool(scdata['options']['BR_S']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DUP_S',
-                                          'state': 'down' if bool(scdata['options']['DUP_S']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BACKUP',
-                                          'state': 'down' if bool(scdata['options']['BACKUP']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DEL_F_SIZE',
-                                          'state': 'down' if bool(scdata['options']['DEL_F_SIZE']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DUP_F',
-                                          'state': 'down' if bool(scdata['options']['DUP_F']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'INTEGRITY',
-                                          'state': 'down' if bool(scdata['options']['INTEGRITY']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'CL_TEMP',
-                                          'state': 'down' if bool(scdata['options']['CL_TEMP']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DEL_F_OLD',
-                                          'state': 'down' if bool(scdata['options']['DEL_F_OLD']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BACKUP_OLD',
-                                          'state': 'down' if bool(scdata['options']['BACKUP_OLD']) else 'normal'}}]}
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BR_S']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DUP_S']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BACKUP']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DEL_F_SIZE']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DUP_F']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['INTEGRITY']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['CL_TEMP']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DEL_F_OLD']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BACKUP_OLD']) else False,
+                                          'size_hint_x': 0.1}}]}
 
