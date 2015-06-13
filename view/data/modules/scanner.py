@@ -25,10 +25,10 @@ empty = 0
 class ScCompositeListItem(CompositeListItem):
     text = ''
 
-## Modifies ListItemButton to always return False
-class ScButton(ListItemButton):
-    def on_press(self):
-        return False
+## Defined in Kivy files
+class ScCheckBox(CheckBox, ListItemLabel):
+    def __init__(self, **kwargs):
+        super(ScCheckBox, self).__init__(**kwargs)
 
 ## Defined in Kivy files
 class ScLabel(ListItemLabel):
@@ -45,6 +45,9 @@ class ScToggleButton(ToggleButton):
     def __init__(self, **kwargs):
         self.value = kwargs.get('value', '')
         super(ScToggleButton, self).__init__(**kwargs)
+
+class HeaderBox(BoxLayout):
+    pass
 
 ## The view of an individual scanner item
 class ScDetailView(BoxLayout):
@@ -202,6 +205,7 @@ class ScannerViewModal(BoxLayout):
 
         super(ScannerViewModal, self).__init__(**kwargs)
         self.list_view = ListView(adapter=self.list_adapter)
+        self.add_widget(HeaderBox())
         self.add_widget(self.list_view)
         if len(self.scdata) is 0:
             detail_view = ScDetailView(sc_name="List is empty", size_hint=(.6, 1.0))
@@ -266,31 +270,40 @@ class ScannerViewModal(BoxLayout):
                 'cls_dicts': [{'cls': ListItemButton,
                                'kwargs': {'text': scdata['path'],
                                           'size_hint_x': 0.5}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BR_S',
-                                          'state': 'down' if bool(scdata['options']['BR_S']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DUP_S',
-                                          'state': 'down' if bool(scdata['options']['DUP_S']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BACKUP',
-                                          'state': 'down' if bool(scdata['options']['BACKUP']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DEL_F_SIZE',
-                                          'state': 'down' if bool(scdata['options']['DEL_F_SIZE']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DUP_F',
-                                          'state': 'down' if bool(scdata['options']['DUP_F']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'INTEGRITY',
-                                          'state': 'down' if bool(scdata['options']['INTEGRITY']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'CL_TEMP',
-                                          'state': 'down' if bool(scdata['options']['CL_TEMP']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'DEL_F_OLD',
-                                          'state': 'down' if bool(scdata['options']['DEL_F_OLD']) else 'normal'}},
-                              {'cls': ScButton,
-                               'kwargs': {'text' : 'BACKUP_OLD',
-                                          'state': 'down' if bool(scdata['options']['BACKUP_OLD']) else 'normal'}}]}
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BR_S']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DUP_S']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BACKUP']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DEL_F_SIZE']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DUP_F']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['INTEGRITY']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['CL_TEMP']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['DEL_F_OLD']) else False,
+                                          'size_hint_x': 0.1}},
+                              {'cls': ScCheckBox,
+                               'kwargs': {'disabled': True,
+                                          'active': True if bool(scdata['options']['BACKUP_OLD']) else False,
+                                          'size_hint_x': 0.1}}]}
 
