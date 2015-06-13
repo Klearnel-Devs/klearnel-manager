@@ -1,7 +1,7 @@
-__author__ = 'Derek'
-"""
-    Klearnel Manager GUI
-"""
+## @package view
+#   Defines classes to be displayed by the GUI
+#
+# @author Antoine Ceyssens <a.ceyssens@nukama.be> & Derek Van Hove <d.vanhove@nukama.be>
 from kivy.app import App
 from os.path import *
 from kivy.lang import Builder
@@ -27,23 +27,26 @@ from view.data.modules.config import *
 from view.data.modules.quarantine import *
 import re
 
-added = 0
-
+## Inherits from Screen and define add_widget
 class ManagerScreen(Screen):
+    ## Self explanatory
     fullscreen = BooleanProperty(False)
 
+    ## Adds a widget
     def add_widget(self, *args):
         if 'content' in self.ids:
             return self.ids.content.add_widget(*args)
         return super(ManagerScreen, self).add_widget(*args)
 
+## See Kivy Files
 class ListItems(ListItemButton):
     pass
 
-
 class ListViewModal(BoxLayout):
+    ## The data containing clients
     data = ListProperty()
 
+    ## Constructor
     def __init__(self, **kwargs):
         self.data = [{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
         args_converter = lambda row_index, rec: {'text': rec['text'],
@@ -58,30 +61,35 @@ class ListViewModal(BoxLayout):
         self.add_widget(ListView(adapter=self.list_adapter))
 
 
-
+## The root application
 class ManagerApp(App):
+    ## Self explanatory
     index = NumericProperty(-1)
+    ## Current screens title
     current_title = StringProperty()
+    ## Self explanatory
     time = NumericProperty(0)
-    show_sourcecode = BooleanProperty(False)
+    ## Self explanatory
     prev = 'Scanner'
-    sourcecode = StringProperty()
+    ## List of screen names
     screen_names = ListProperty()
-    hierarchy = ListProperty()
+    ## User database path
     user_db = "../user.db"
 
+    ## Constructor
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screens = {}
         self.available_screens = {}
         Active.cl = ClientList
         Active.confList = Config()
-        Active.qrList = [qr_temp_create1(), qr_temp_create2(), qr_temp_create3(), qr_temp_create4(), qr_temp_create5()]
-        Active.scanList = [sc_temp_create1(), sc_temp_create2(), sc_temp_create3(), sc_temp_create4(), sc_temp_create5()]
+        Active.qrList = list()
+        Active.scanList = list()
         Active.scan_task = TaskScan()
         Active.qr_task = TaskQR()
         Active.conf_task = TaskConfig()
 
+    ## Builder
     def build(self):
         self.title = 'Klearnel Manager'
         self.available_screens = ([
@@ -92,6 +100,7 @@ class ManagerApp(App):
         self.available_screens = [join(curdir1, 'data', 'screens', '{}.kv'.format(fn)) for fn in self.available_screens]
         self.initial_screen()
 
+    ## Determines initial screen depending on existence of user database file
     def initial_screen(self):
         if not exists(self.user_db):
             self.get_index('Creation')
@@ -99,12 +108,16 @@ class ManagerApp(App):
             self.get_index('Login')
         self.load_screen(self.index)
 
+    ## GETTER
+    # @param page The page name to find
     def get_index(self, page):
         for x in range(0, len(self.available_screens)):
             if self.available_screens[x].find(page) != -1:
-
                 self.index = x
 
+    ## Loads a previously unloaded screen or returns an already loaded screen
+    # @param index The page index
+    # @return The page
     def load_screen(self, index):
         if index in self.screens:
             sm = self.root.ids.sm
@@ -117,6 +130,10 @@ class ManagerApp(App):
         sm.switch_to(screen, direction='left')
         self.current_title = screen.name
 
+    ## Used for user registration -> input validations, screen control
+    # @param user The username to validate
+    # @param pwd The password to validate
+    # @param pwd_verif The password to validate and crosscheck with pwd
     def register(self, user, pwd, pwd_verif):
         if pwd != pwd_verif:
             popup = Popup(size_hint=(None, None), size=(300, 150))
@@ -147,6 +164,9 @@ class ManagerApp(App):
             self.get_index('Login')
             self.load_screen(self.index)
 
+    ## For user login
+    # @param user The inputted user name to validate
+    # @param pwd The inputted password to validate
     def login(self, user, pwd):
         f = open(self.user_db, mode='r')
         file_c = f.read()
@@ -171,6 +191,13 @@ class ManagerApp(App):
                 self.get_index('Chooser')
             self.load_screen(self.index)
 
+    ## Connects to a Klearnel host
+    # @param host The client on which to connect
+    # @throws BadCredentials
+    # @exception BadCredentials
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @exception ConfigException
     def connect(self, host):
         netw = Networker()
         for x in range(0, len(Active.cl.c_list)):
@@ -221,6 +248,10 @@ class ManagerApp(App):
         self.get_index('Scanner')
         self.load_screen(self.index)
 
+    ## Validates and adds a client to client database
+    # @param server The client name or IP
+    # @param pw The Klearnel password
+    # @param token The Klearnel token
     def addsrv(self, server, pw, token):
         if len(server) < 1:
             popup = Popup(size_hint=(None, None), size=(300, 150))
@@ -245,29 +276,32 @@ class ManagerApp(App):
             self.get_index('Chooser')
             self.load_screen(self.index)
 
-    def on_pause(self):
-        return True
-
-    def on_resume(self):
-        pass
-
+    ## Sets indexing for screen navigation
+    # @param idx The index
     def go_screen(self, idx):
         if self.prev != idx:
             self.prev = idx
             self.get_index(idx)
             self.load_screen(self.index)
 
+    ## Self explanatory
     def quit(self):
         sys.exit(0)
 
+    ## Returns to Login screen
     def logout(self):
-
         self.get_index("Login")
         self.load_screen(self.index)
 
-    def getConf(self, section, entry):
-        return Active.confList.get_value(section, entry)
+    ## Gets a configuration value
+    # @param section The concerning section
+    # @param key The concerning key
+    def getConf(self, section, key):
+        return Active.confList.get_value(section, key)
 
+    ## Validates configuration changes
+    # @param kwargs A variable argument list containing each configuration screen button
+    # @exception ConfigException
     def setConf(self, *kwargs):
         modified = False
         for arg in kwargs:
@@ -308,6 +342,15 @@ class ManagerApp(App):
             popup.bind(on_press=popup.dismiss)
             popup.open()
 
+    ## Validates scanner additions
+    # @param path The item path
+    # @param is_temp Whether its a temporary folder or not
+    # @param size The max file size for backup/delete
+    # @param age The max age for backup/delete
+    # @param args The options selected
+    # @throws EmptyFields
+    # @exception EmptyFields
+    # @exception ScanException
     def addscan(self, path, is_temp, size, age, *args):
         try:
             if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
@@ -346,6 +389,11 @@ class ManagerApp(App):
         self.get_index("Scanner")
         self.load_screen(self.index)
 
+    ## Validates additions to Klearnel's QR
+    # @param filename The file to add
+    # @throws EmptyFields
+    # @exception EmptyFields
+    # @exception QrException
     def addQR(self, filename):
         try:
             if not filename or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', filename):
@@ -370,6 +418,12 @@ class ManagerApp(App):
         self.get_index("Quarantine")
         self.load_screen(self.index)
 
+    ## Validates and modifies scanner item options
+    # @param btn The selected button
+    # @param path The item path
+    # @param ids ID of button
+    # @param state The button state
+    # @exception ScanException
     def mod_sc(self, btn, path, ids, state):
         for x in range(0, len(Active.scanList)):
             if path is Active.scanList[x].path:
@@ -400,6 +454,3 @@ class ManagerApp(App):
             btn.state = 'normal' if state is 'down' else 'down'
             Active.scanList[x] = tmp
             return
-
-if __name__ == '__main__':
-    ManagerApp().run()

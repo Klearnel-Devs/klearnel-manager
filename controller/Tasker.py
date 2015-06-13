@@ -1,4 +1,7 @@
-__author__ = 'antoine'
+## @package controller
+#   Handles communication between Klearnel & Klearnel Manager
+#
+# @author Antoine Ceyssens <a.ceyssens@nukama.be> & Derek Van Hove <d.vanhove@nukama.be>
 from controller.Networker import Networker
 from model.ScanElem import ScanElem
 from model.QrElem import QrElem
@@ -6,25 +9,43 @@ from model.Exceptions import *
 from controller import Active
 from socket import SHUT_RDWR
 
+## DEFINES CODE FOR KLEARNEL EXIT
 KL_EXIT = -1
+## DEFINES CODE FOR ADDING ITEM TO KLEARNEL'S QUARANTINE
 QR_ADD = 1
+## DEFINES CODE FOR REMOVING ITEM FROM KLEARNEL'S QUARANTINE
 QR_RM = 2
+## DEFINES CODE FOR RESTORING ITEM FROM KLEARNEL'S QUARANTINE
 QR_REST = 3
+## DEFINES CODE FOR RETRIEVING KLEARNEL'S QUARANTINE LIST
 QR_LIST = 4
+## DEFINES CODE FOR GETTING KLEARNEL'S QUARANTINE INFO
 QR_INFO = 5
+## DEFINES CODE FOR REMOVING ALL ITEMS IN KLEARNEL'S QUARANTINE
 QR_RM_ALL = 6
+## DEFINES CODE FOR RESTORING ALL ITEMS IN KLEARNEL'S QUARANTINE
 QR_REST_ALL = 7
-QR_LIST_RECALL = 8
+## DEFINES CODE FOR ADDING ITEM TO KLEARNEL'S SCANNER
 SCAN_ADD = 10
+## DEFINES CODE FOR REMOVING ITEM FROM KLEARNEL'S SCANNER
 SCAN_RM = 11
+## DEFINES CODE FOR GETTING KLEARNEL'S SCANNER LIST
 SCAN_LIST = 12
+## DEFINES CODE FOR MODIFYING AN ELEMENT'S SCAN OPTIONS
 SCAN_MOD = 13
+## DEFINES CODE FOR GETTING KLEARNEL'S CONFIGURATION SETTINGS
 CONF_LIST = 20
+## DEFINES CODE FOR MODIFYING KLEARNEL'S CONFIGURATION SETTINGS
 CONF_MOD = 21
+## DEFINES CODE FOR AUTHENTIFYING WITH KLEARNEL
 NET_CONNEC = 30
 
-
+## Superclass that handles data between Klearnel & Klearnel Manager
 class Tasker:
+    ## Method that sends identifying credentials to Klearnel
+    # @param net Networker instance
+    # @param client The client concerning communication
+    # @throws ConnectionRefusedError
     def send_credentials(self, net, client):
         net.send_val(client.token)
         if net.get_ack() != net.SOCK_ACK:
@@ -34,19 +55,30 @@ class Tasker:
         if net.get_ack() != net.SOCK_ACK:
             raise ConnectionRefusedError("Error on root password negociation")
 
-
+## Subclass of Tasker for Klearnel host control
 class TaskGlobal(Tasker):
+
+    ## NOT YET IMPLEMENTED
     def get_monitor_info(self):
         pass
 
+    ## NOT YET IMPLEMENTED
     def stop_klearnel(self):
         pass
 
+    ## NOT YET IMPLEMENTED
     def restart_klearnel(self):
         pass
 
-
+## Subclass of Tasker to handle all Scanner related communication
 class TaskScan(Tasker):
+    ## Adds an element to Klearnel's scanner list
+    # @param client The host on which to connect
+    # @param new_elem The new scanner item
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws ScanException
     def add_to_scan(self, client, new_elem):
         net = Networker()
         try:
@@ -77,6 +109,15 @@ class TaskScan(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Modifies a scanner element in Klearnel's Scanner Watchlist
+    # @param client The client on which to connect
+    # @param path The path of the scanner element
+    # @param options The modified options
+    # @param tmp Boolean determining whether item is a temp folder
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws ScanException
     def mod_from_scan(self, client, path, options, tmp):
         net = Networker()
         try:
@@ -97,6 +138,13 @@ class TaskScan(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Removes an item from Klearnels scanner watchlist
+    # @param client The client on which to connect
+    # @param path The scanner elements path
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws ScanException
     def rm_from_scan(self, client, path):
         net = Networker()
         try:
@@ -114,6 +162,14 @@ class TaskScan(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Asks and receives the Scanner Watchlist from Klearnel
+    # @param client The client on which to connect
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @exception EmptyListException Raised if received list is empty
+    # @throws ScanException
+    # @return scan_list The new scanner list from Klearnel
     def get_scan_list(self, client):
         net = Networker()
         try:
@@ -176,8 +232,15 @@ class TaskScan(Tasker):
             net.s.close()
         return scan_list
 
-
+## Subclass of Tasker for Quarantine operations
 class TaskQR(Tasker):
+    ## Adds an element to Klearnel's QR List
+    # @param client The host on which to connect
+    # @param path The new quarantine file path
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws QrException
     def add_to_qr(self, client, path):
         net = Networker()
         try:
@@ -195,6 +258,13 @@ class TaskQR(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Removes an item from Klearnels quarantine list
+    # @param client The client on which to connect
+    # @param filename The file to remove
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws QrException
     def rm_from_qr(self, client, filename):
         net = Networker()
         try:
@@ -212,6 +282,13 @@ class TaskQR(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Restores an item from Klearnels quarantine list
+    # @param client The client on which to connect
+    # @param filename The file to restore
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws QrException
     def restore_from_qr(self, client, filename):
         net = Networker()
         try:
@@ -229,6 +306,14 @@ class TaskQR(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Asks and receives the Quarantine list from Klearnel
+    # @param client The client on which to connect
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @exception EmptyListException Raised if received list is empty
+    # @throws QrException
+    # @return qr_list The new quarantine list
     def get_qr_list(self, client):
         net = Networker()
         try:
@@ -283,9 +368,16 @@ class TaskQR(Tasker):
 
         return qr_list
 
+    ## NOT YET IMPLEMENTED
     def get_qr_info(self):
         pass
 
+    ## Removes all items from Klearnel's Quarantine List
+    # @param client The client on which to connect
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws QrException
     def rm_all_from_qr(self, client):
         net = Networker()
         try:
@@ -302,6 +394,12 @@ class TaskQR(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Restores all files in Klearnel's Quarantine list
+    # @param client The client on which to connect
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws QrException
     def restore_all_from_qr(self, client):
         net = Networker()
         try:
@@ -318,8 +416,14 @@ class TaskQR(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
-
+## Subclass of Tasker for handling configuration communications
 class TaskConfig(Tasker):
+    ## Asks & Receives Klearnel's configuration parameters
+    # @param client The client on which to connect
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws ConfigException
     def get_config(self, client):
         net = Networker()
         try:
@@ -414,6 +518,15 @@ class TaskConfig(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
+    ## Sends modifications of Klearnel's configuration settings
+    # @param client The client on which to connect
+    # @param section The section in which the key value pair are contained
+    # @param key The key on which to change its value
+    # @param new_value The new setting
+    # @exception ConnectionRefusedError
+    # @exception ConnectionError
+    # @exception NoConnectivity
+    # @throws ConfigException
     def send_conf_mod(self, client, section, key, new_value):
         net = Networker()
         try:
@@ -446,13 +559,3 @@ class TaskConfig(Tasker):
             net.s.shutdown(SHUT_RDWR)
             net.s.close()
 
-if __name__ == "__main__":
-    from model.Client import Client, ClientList
-    from model.Config import Config
-    from controller import Active
-    Active.cl = ClientList()
-    Active.confList = Config()
-    Active.cl.load_list()
-    conf_task = TaskConfig()
-    conf_task.get_config(Active.cl.c_list[0])
-    print("Value of SMALL -> Location: "+Active.confList.sma['location'])
