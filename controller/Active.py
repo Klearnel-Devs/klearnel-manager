@@ -18,7 +18,7 @@ def init():
     global tasker
     global conf_task
     global changed
-    changed = dict(sc=0, qr=0)
+    changed = dict(sc=0, qr=0, cl=0)
     cl = None
     client = None
     user = None

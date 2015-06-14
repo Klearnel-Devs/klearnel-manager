@@ -68,7 +68,7 @@ class Client:
     ## The hostname
     name = None
     ## The IP address
-    ip = None
+    ip = ''
 
     ## Constructor
     def __init__(self, token, ip, name, encrypt_pwd):
@@ -78,6 +78,11 @@ class Client:
         self.ip = ip
         self.password = Crypter.encrypt(encrypt_pwd)
         self.user = Active.user
+
+    ## SETTER
+    def set_password(self, pw):
+        from controller.Crypter import Crypter
+        self.password = Crypter.encrypt(pw)
 
     ## String override
     def __str__(self):
