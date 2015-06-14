@@ -104,22 +104,22 @@ class Config:
     def set_config(self, section, key, value):
         if key == 'exp_def':
             self.set_exp_def(section, int(value))
-        if section == 'gbl':
+        elif section == 'gbl':
             if key == 'log_age':
                 self.set_log_age(int(value))
             else:
                 self.set_size_def(key, int(value))
-        if section == 'sma':
+        elif section == 'sma':
             if key == 'backup':
                 self.sma[key] = value
             else:
                 self.sma[key] = str(value)
-        if section == 'med':
+        elif section == 'med':
             if key == 'backup':
                 self.med[key] = value
             else:
                 self.med[key] = str(value)
-        if section == 'lrg':
+        elif section == 'lrg':
             if key == 'backup':
                 self.lrg[key] = value
             else:
