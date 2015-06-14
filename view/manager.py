@@ -45,10 +45,15 @@ class ListItems(ListItemButton):
 class ListViewModal(BoxLayout):
     ## The data containing clients
     data = ListProperty()
-
+[{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
     ## Constructor
     def __init__(self, **kwargs):
-        self.data = [{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
+        self.data = list()
+        for x in range(0, len(Active.cl.c_list)):
+            self.data.append({
+                'hostname': Active.cl.c_list[x].name,
+                'ip': Active.cl.c_list[x].ip
+            })
         args_converter = lambda row_index, rec: {'text': rec['text'],
                                                  'size_hint_y': None,
                                                  'height': 25}
@@ -203,7 +208,7 @@ class ManagerApp(App):
         for x in range(0, len(Active.cl.c_list)):
             try:
                 if Active.cl.c_list[x].name == host:
-                    netw.connect_to(host)
+                    netw.connect_to(Active.cl.c_list[x])
                     try:
                         netw.send_val(Active.cl.c_list[x].token)
                         if netw.get_ack() != netw.SOCK_ACK:
@@ -252,7 +257,7 @@ class ManagerApp(App):
     # @param server The client name or IP
     # @param pw The Klearnel password
     # @param token The Klearnel token
-    def addsrv(self, server, pw, token):
+    def addsrv(self, server, ip, pw, token):
         if len(server) < 1:
             popup = Popup(size_hint=(None, None), size=(300, 150))
             popup.add_widget(Label(text="Client name must not be empty"))
@@ -272,7 +277,7 @@ class ManagerApp(App):
             popup.title = "Token Error"
             popup.open()
         else:
-            Active.cl.add_client(Active.cl, Client(token, server, pw))
+            Active.cl.add_client(Active.cl, Client(token, ip, server, pw))
             self.get_index('Chooser')
             self.load_screen(self.index)
 

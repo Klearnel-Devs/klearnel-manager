@@ -24,15 +24,15 @@ class Networker:
     # @param host The host as an IP address or hostname
     # @param port The port on which to connect
     # @throws NoConnectivity
-    def connect_to(self, host, port=42225):
+    def connect_to(self, client, port=42225):
         try:
-            if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host):
-                ip_addr = host
+            if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", client.ip):
+                ip_addr = client.ip
             else:
-                ip_addr = socket.gethostbyname(host)
+                ip_addr = socket.gethostbyname(client.name)
             self.s.connect((ip_addr, port))
         except:
-            raise NoConnectivity("Unable to find "+host)
+            raise NoConnectivity("Unable to find "+client.name)
 
     ## Method that formats and sends data through the open socket
     # @param value The value to send
