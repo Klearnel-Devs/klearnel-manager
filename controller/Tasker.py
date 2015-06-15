@@ -8,6 +8,7 @@ from model.QrElem import QrElem
 from model.Exceptions import *
 from controller import Active
 from socket import SHUT_RDWR
+import socket
 
 ## DEFINES CODE FOR KLEARNEL EXIT
 KL_EXIT = -1
@@ -106,8 +107,11 @@ class TaskScan(Tasker):
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Modifies a scanner element in Klearnel's Scanner Watchlist
     # @param client The client on which to connect
@@ -135,8 +139,11 @@ class TaskScan(Tasker):
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Removes an item from Klearnels scanner watchlist
     # @param client The client on which to connect
@@ -159,8 +166,11 @@ class TaskScan(Tasker):
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Asks and receives the Scanner Watchlist from Klearnel
     # @param client The client on which to connect
@@ -172,10 +182,10 @@ class TaskScan(Tasker):
     # @return scan_list The new scanner list from Klearnel
     def get_scan_list(self, client):
         net = Networker()
+        scan_list = list()
         try:
             net.connect_to(client.name)
             self.send_credentials(net, client)
-            scan_list = list()
             net.send_val(str(SCAN_LIST) + ":0")
             result = None
             i = 0
@@ -228,8 +238,11 @@ class TaskScan(Tasker):
         except ConnectionError:
             raise ScanException("Unable to get list from scanner on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
         return scan_list
 
 ## Subclass of Tasker for Quarantine operations
@@ -255,8 +268,11 @@ class TaskQR(Tasker):
         except ConnectionError:
             raise QrException("Unable to add " + path + " to quarantine on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Removes an item from Klearnels quarantine list
     # @param client The client on which to connect
@@ -279,8 +295,11 @@ class TaskQR(Tasker):
         except ConnectionError:
             raise QrException("Unable to remove " + filename + " from quarantine on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Restores an item from Klearnels quarantine list
     # @param client The client on which to connect
@@ -303,8 +322,11 @@ class TaskQR(Tasker):
         except ConnectionError:
             raise QrException("Unable to restore " + filename + " from quarantine on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Asks and receives the Quarantine list from Klearnel
     # @param client The client on which to connect
@@ -316,10 +338,10 @@ class TaskQR(Tasker):
     # @return qr_list The new quarantine list
     def get_qr_list(self, client):
         net = Networker()
+        qr_list = list()
         try:
             net.connect_to(client.name)
             self.send_credentials(net, client)
-            qr_list = list()
             net.send_val(str(QR_LIST) + ":0")
             result = None
             i = 0
@@ -363,8 +385,11 @@ class TaskQR(Tasker):
         except ConnectionError:
             raise QrException("Unable to get list from quarantine on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
         return qr_list
 
@@ -391,8 +416,11 @@ class TaskQR(Tasker):
         except NoConnectivity:
             raise QrException("Unable to connect to " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Restores all files in Klearnel's Quarantine list
     # @param client The client on which to connect
@@ -413,8 +441,11 @@ class TaskQR(Tasker):
         except ConnectionError:
             raise Exception("Unable to restore all elements from the quarantine on " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
 ## Subclass of Tasker for handling configuration communications
 class TaskConfig(Tasker):
@@ -515,8 +546,11 @@ class TaskConfig(Tasker):
         except ConnectionError:
             raise ConfigException("Unable to get configurations from " + client.name)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
     ## Sends modifications of Klearnel's configuration settings
     # @param client The client on which to connect
@@ -556,6 +590,9 @@ class TaskConfig(Tasker):
         except ConnectionError:
             raise ConfigException("Unable to modify "+key+" with: "+new_value)
         finally:
-            net.s.shutdown(SHUT_RDWR)
-            net.s.close()
+            try:
+                net.s.shutdown(SHUT_RDWR)
+                net.s.close()
+            except socket.error:
+                pass
 
