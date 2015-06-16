@@ -9,6 +9,7 @@ from model.Exceptions import *
 from controller import Active
 from socket import SHUT_RDWR
 import socket
+import inspect
 
 ## DEFINES CODE FOR KLEARNEL EXIT
 KL_EXIT = -1
@@ -40,6 +41,11 @@ CONF_LIST = 20
 CONF_MOD = 21
 ## DEFINES CODE FOR AUTHENTIFYING WITH KLEARNEL
 NET_CONNEC = 30
+
+def lineno():
+    """Returns the current line number in our program."""
+    return print(inspect.currentframe().f_back.f_lineno)
+
 
 ## Superclass that handles data between Klearnel & Klearnel Manager
 class Tasker:
