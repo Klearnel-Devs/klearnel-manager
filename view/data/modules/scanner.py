@@ -97,7 +97,10 @@ class ScDetailView(BoxLayout):
                     box4.add_widget(btntmp)
                     tmpSize = Active.scanList[x].back_limit_size if bool(Active.scanList[x].options['BACKUP']) \
                                                                  else Active.scanList[x].del_limit_size
-                    box5.add_widget(Label(text="Files Larger Than {0:g}".format(float(tmpSize)) + "MB:", halign='right'))
+                    if float(tmpSize) > 0:
+                        box5.add_widget(Label(text="Files Larger Than {0:g}".format(float(tmpSize)) + " MB:", halign='right'))
+                    else :
+                        box5.add_widget(Label(text="Files Larger Than N/A MB", halign='right'))
                     box5.add_widget(ScToggleButton(value=self.sc_name, id='BACKUP', text="Backup", halign='right', group="sizeFiles",
                                                    state='down' if bool(Active.scanList[x].options['BACKUP'])
                                                    else 'normal',

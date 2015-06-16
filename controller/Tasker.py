@@ -112,6 +112,8 @@ class TaskScan(Tasker):
             raise ScanException("Unable to add " + new_elem.path + "\nto scanner on " + client.name)
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
+        except ValueError:
+            raise ScanException("Undetermined error when adding to scanner\n on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -144,6 +146,8 @@ class TaskScan(Tasker):
                                 "\n from scanner on " + client.name)
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
+        except ValueError:
+            raise ScanException("Undetermined error when changing\n options on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -171,6 +175,8 @@ class TaskScan(Tasker):
             raise ScanException("Unable to remove " + path + " from scanner on " + client.name)
         except NoConnectivity:
             raise ScanException("Unable to connect to " + client.name)
+        except ValueError:
+            raise ScanException("Undetermined error when removing from\n scanner on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -243,6 +249,8 @@ class TaskScan(Tasker):
             raise ScanException("Unable to connect to " + client.name)
         except ConnectionError:
             raise ScanException("Unable to get list from scanner on " + client.name)
+        except ValueError:
+            raise ScanException("Empty value when getting list from scanner on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -273,6 +281,8 @@ class TaskQR(Tasker):
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to add " + path + " to quarantine on " + client.name)
+        except ValueError:
+            raise QrException("Undetermined Error when adding to Quarantine")
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -300,6 +310,8 @@ class TaskQR(Tasker):
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to remove " + filename + " from quarantine on " + client.name)
+        except ValueError:
+            raise QrException("Undetermined Error when removing from Quarantine")
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -326,7 +338,9 @@ class TaskQR(Tasker):
         except ConnectionRefusedError:
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
-            raise QrException("Unable to restore " + filename + " from quarantine on " + client.name)
+            raise QrException("Unable to restore " + filename + " from \nquarantine on " + client.name)
+        except ValueError:
+            raise QrException("Undetermined error when restoring\n from Quarantine")
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -390,6 +404,8 @@ class TaskQR(Tasker):
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise QrException("Unable to get list from quarantine on " + client.name)
+        except ValueError:
+            raise QrException("Empty value when getting list from quarantine on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -415,12 +431,14 @@ class TaskQR(Tasker):
             net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_RM_ALL) + ":0")
-        except ConnectionError:
-            raise Exception("Unable to remove all elements in the quarantine on " + client.name)
         except ConnectionRefusedError:
             raise QrException("Unable to authentify with " + client.name)
+        except ConnectionError:
+            raise Exception("Unable to remove all elements in the quarantine on " + client.name)
         except NoConnectivity:
             raise QrException("Unable to connect to " + client.name)
+        except ValueError:
+            raise QrException("Undetermined error when removing\n all from Quarantine on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -446,6 +464,8 @@ class TaskQR(Tasker):
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise Exception("Unable to restore all elements from the quarantine on " + client.name)
+        except ValueError:
+            raise QrException("Undetermined error when restoring\n all from Quarantine on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -462,18 +482,20 @@ class TaskConfig(Tasker):
     # @exception NoConnectivity
     # @throws ConfigException
     def get_config(self, client):
+        lineno()
         net = Networker()
+        lineno()
         try:
             net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(CONF_LIST) + ":0")
-
+            lineno()
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
             Active.confList.gbl['log_age'] = int(result)
             net.send_ack(net.SOCK_ACK)
-
+            lineno()
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
@@ -551,6 +573,8 @@ class TaskConfig(Tasker):
             raise ConfigException("Unable to authentify with " + client.name)
         except ConnectionError:
             raise ConfigException("Unable to get configurations from " + client.name)
+        except ValueError:
+            raise ConfigException("Undetermined error when retrieving\n config on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)
@@ -595,6 +619,8 @@ class TaskConfig(Tasker):
             raise ConfigException("Unable to connect to " + client.name)
         except ConnectionError:
             raise ConfigException("Unable to modify "+key+" with: "+new_value)
+        except ValueError:
+            raise ConfigException("Undetermined error when modifying\n config on " + client.name)
         finally:
             try:
                 net.s.shutdown(SHUT_RDWR)

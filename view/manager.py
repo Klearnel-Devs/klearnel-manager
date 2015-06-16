@@ -519,9 +519,11 @@ class ManagerApp(App):
             if not path or not re.search(r'^[\'"]?(?:/[^/]+)*[\'"]?$', path):
                 raise EmptyFields("Text fields empty or incorrect format")
             if not age or not re.search(r'^[0-9]+$', age):
-                raise EmptyFields("Text fields empty or incorrect format")
+                if age != "Age in days":
+                    raise EmptyFields("Text fields empty or incorrect format")
             if not size or not re.search(r'^[0-9]+$', size):
-                raise EmptyFields("Text fields empty or incorrect format")
+                if size != "Size in MB":
+                    raise EmptyFields("Text fields empty or incorrect format")
         except EmptyFields as ef:
             popup = Popup(size_hint=(None, None), size=(400, 150))
             popup.add_widget(Label(text=ef.value))
@@ -529,16 +531,22 @@ class ManagerApp(App):
             popup.title = "Input Error"
             popup.open()
             return
-
         tmp = ScanElem(path)
         tmp.is_temp = 0 if is_temp is 'normal' else 1
         opt = ''
         for arg in args:
             opt += '0' if arg is 'normal' else '1'
         tmp.set_options(opt)
-        tmp.back_limit_size = int(size)
-        tmp.del_limit_size = int(size)
-        tmp.max_age = age
+        if size == "Size in MB":
+            tmp.back_limit_size = -1
+            tmp.del_limit_size = -1
+        else:
+            tmp.back_limit_size = int(size)
+            tmp.del_limit_size = int(size)
+        if age == "Age in days":
+            tmp.max_age = -1
+        else:
+            tmp.max_age = age
         try:
             Active.scan_task.add_to_scan(Active.client, tmp)
         except ScanException as se:
