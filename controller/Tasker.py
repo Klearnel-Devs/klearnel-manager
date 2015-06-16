@@ -226,7 +226,7 @@ class TaskScan(Tasker):
                 size = net.get_data(20)
                 net.send_ack(net.SOCK_ACK)
                 result = net.get_data(int(size))
-                scan_elem.is_temp = result
+                scan_elem.is_temp = int(result)
                 net.send_ack(net.SOCK_ACK)
 
                 size = net.get_data(20)
