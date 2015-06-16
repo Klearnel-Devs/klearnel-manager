@@ -27,6 +27,9 @@ from view.data.modules.config import *
 from view.data.modules.quarantine import *
 import re
 
+## Variable used to determine whether to schedule refresh event
+update = 0
+
 ## Inherits from Screen and define add_widget
 class ManagerScreen(Screen):
     ## Self explanatory
@@ -39,8 +42,124 @@ class ManagerScreen(Screen):
         return super(ManagerScreen, self).add_widget(*args)
 
 ## See Kivy Files
-class ListItems(ListItemButton):
+class StTextInput(TextInput):
     pass
+
+class ConnectButton(Button):
+    pass
+
+class ClCompositeListItem(CompositeListItem):
+    text = ''
+
+## The view of an individual quarantine item
+class ClientDetailView(GridLayout):
+    ## Quarantine items name
+    cl_name = StringProperty('', allownone=True)
+    obj = None
+
+    ## Constructor
+    def __init__(self, **kwargs):
+        kwargs['cols'] = 1
+        self.cl_name = kwargs.get('cl_name', '')
+        super(ClientDetailView, self).__init__(**kwargs)
+        self.size_hint_x = 1.0
+        if self.cl_name:
+            self.redraw()
+
+    ## Redraws the detail view
+    def redraw(self, *args):
+        self.clear_widgets()
+        if self.cl_name:
+            for x in range(0, len(Active.cl.c_list)):
+                if Active.cl.c_list[x].name == self.cl_name:
+                    box1 = BoxLayout(orientation='horizontal', size_hint_y=None, height= 40)
+                    box2 = BoxLayout(orientation='horizontal', size_hint_y=None, height= 40)
+                    box3 = BoxLayout(orientation='horizontal', size_hint_y=None, height= 40)
+                    box4 = BoxLayout(orientation='horizontal', size_hint_y=None, height= 40)
+                    box5 = BoxLayout(orientation='horizontal', size_hint_y=None, height= 40)
+                    box1.add_widget(Label(text="Hostname  :", halign='right'))
+                    input1 = StTextInput(text=self.cl_name)
+                    box1.add_widget(input1)
+                    box2.add_widget(Label(text="IP Address  :", halign='right'))
+                    input2 = StTextInput(text=Active.cl.c_list[x].ip)
+                    box2.add_widget(input2)
+                    box3.add_widget(Label(text="Klearnel Password:", halign='right'))
+                    input3 = StTextInput(text='', password=True)
+                    box3.add_widget(input3)
+                    box4.add_widget(Label(text="Token:", halign='right'))
+                    input4 = StTextInput(text='', password=True)
+                    box4.add_widget(input4)
+                    box5.add_widget(ConnectButton(text="Connect", id=str(x)))
+                    box5.add_widget(Button(text="Modify",
+                                           on_press=lambda a: self.modify_item(input1.text, input2.text, input3.text,
+                                                                               input4.text, x)))
+                    box5.add_widget(Button(text="Remove",
+                                           on_press=lambda a: self.delete_item(x)))
+                    self.add_widget(box1)
+                    self.add_widget(box2)
+                    self.add_widget(box3)
+                    self.add_widget(box4)
+                    self.add_widget(box5)
+                    break
+
+    ## Determines whether to redraw if selection has changed
+    # @param list_adapter
+    # @param args
+    def cl_changed(self, list_adapter, *args):
+        if len(list_adapter.selection) == 0:
+            self.cl_name = None
+        else:
+            selected_object = list_adapter.selection[0]
+
+            if type(selected_object) is str:
+                self.cl_name = selected_object
+            else:
+                self.cl_name = selected_object.text
+        self.redraw()
+
+    ## Triggered when modifying a client
+    # @param item The item to restore
+    # @param index The items index in the local list
+    def modify_item(self, name, ip, pw, token, index):
+        if Active.cl.c_list[index].name is not name:
+            Active.cl.c_list[index].name = name
+        if Active.cl.c_list[index].ip is not ip:
+            Active.cl.c_list[index].ip = ip
+        if len(pw) < 2:
+            pass
+        elif len(pw) < 4:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Password must be at least 4 characters long"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Password Error"
+            popup.open()
+            return
+        else:
+            Active.cl.c_list[index].set_password(pw)
+        if len(token) < 4:
+            pass
+        elif 'KL' not in token or not re.search(r'[0-9]', token):
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text="Invalid token format"))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Token Error"
+            popup.open()
+            return
+        else:
+            Active.cl.c_list[index].token = token
+        Active.cl.save_list(Active.cl)
+        global update
+        update = 1
+
+    ## Triggered when removing a client
+    # @param item The item to remove
+    # @param index The items index in the local list
+    # @exception QrException
+    def delete_item(self, index):
+        Active.cl.c_list.pop(index)
+        Active.cl.save_list(Active.cl)
+        global update
+        update = 1
 
 class ListViewModal(BoxLayout):
     ## The data containing clients
@@ -48,17 +167,64 @@ class ListViewModal(BoxLayout):
 
     ## Constructor
     def __init__(self, **kwargs):
-        self.data = [{'text': str(Active.cl.c_list[i]), 'is_selected': False} for i in range(len(Active.cl.c_list))]
-        args_converter = lambda row_index, rec: {'text': rec['text'],
-                                                 'size_hint_y': None,
-                                                 'height': 25}
+        self.data = list()
+        for x in range(0, len(Active.cl.c_list)):
+            self.data.append({
+                'hostname': Active.cl.c_list[x].name,
+                'ip': Active.cl.c_list[x].ip
+            })
         self.list_adapter = ListAdapter(data=self.data,
-                                        args_converter=args_converter,
-                                        cls=ListItems,
+                                        args_converter=self.formatter,
+                                        cls=ClCompositeListItem,
                                         selection_mode='single',
                                         allow_empty_selection=False)
         super(ListViewModal, self).__init__(**kwargs)
-        self.add_widget(ListView(adapter=self.list_adapter))
+        self.list_view = ListView(adapter=self.list_adapter)
+        self.add_widget(self.list_view)
+        if len(self.data) is 0:
+            detail_view = ClientDetailView(cl_name="List is empty", size_hint=(.6, 1.0))
+        else:
+            detail_view = ClientDetailView(cl_name=self.list_adapter.selection[0].text,
+                                       size_hint=(.6, 1.0))
+
+        self.list_adapter.bind(
+            on_selection_change=detail_view.cl_changed)
+        self.add_widget(detail_view)
+        Clock.schedule_interval(self.callback, 5)
+
+    ## Callback on clock schedule to update list
+    def callback(self, dt):
+        global update
+        if update != 0:
+            update = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+        if Active.changed['cl'] != 0:
+            Active.changed['cl'] = 0
+            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+
+    ## The args converter
+    def formatter(self, rowindex, data):
+        return {'text': data['hostname'],
+                'size_hint_y': None,
+                'height': 40,
+                'cls_dicts': [{'cls': ListItemButton,
+                               'kwargs': {'text': data['hostname']}},
+                              {'cls': ListItemLabel,
+                               'kwargs': {'text': data['ip']}}]}
+
+    ## Updates the Client list
+    # @exception QrException
+    # @exception EmptyListException
+    def update_list(self):
+        self.data.clear()
+        for x in range(0, len(Active.cl.c_list)):
+            self.data.append({
+                'hostname': Active.cl.c_list[x].name,
+                'ip': Active.cl.c_list[x].ip
+            })
+        self.list_adapter.data = self.data
+        if hasattr(self.list_view, '_reset_spopulate'):
+            self.list_view._reset_spopulate()
 
 
 ## The root application
@@ -192,52 +358,47 @@ class ManagerApp(App):
             self.load_screen(self.index)
 
     ## Connects to a Klearnel host
-    # @param host The client on which to connect
+    # @param idx The index in the client list of the host
     # @throws BadCredentials
     # @exception BadCredentials
     # @exception ConnectionError
     # @exception NoConnectivity
     # @exception ConfigException
-    def connect(self, host):
+    def connect(self, idx):
         netw = Networker()
-        for x in range(0, len(Active.cl.c_list)):
-            try:
-                if Active.cl.c_list[x].name == host:
-                    netw.connect_to(host)
-                    try:
-                        netw.send_val(Active.cl.c_list[x].token)
-                        if netw.get_ack() != netw.SOCK_ACK:
-                            raise BadCredentials("Connection rejected by " + host)
-                        netw.send_val(Active.cl.c_list[x].password)
-                        if netw.get_ack() != netw.SOCK_ACK:
-                            raise BadCredentials("Connection rejected by " + host)
-                        netw.send_val(str(NET_CONNEC) + ":0")
-                        netw.s.close()
-                    except BadCredentials as bc:
-                        popup = Popup(size_hint=(None, None), size=(300, 150))
-                        popup.add_widget(Label(text=bc.value))
-                        popup.bind(on_press=popup.dismiss)
-                        popup.title = "Wrong Credentials"
-                        popup.open()
-                        return
-                    except ConnectionError:
-                        popup = Popup(size_hint=(None, None), size=(300, 150))
-                        popup.add_widget(Label(text="Unable to connect to host"))
-                        popup.bind(on_press=popup.dismiss)
-                        popup.title = "Connection Error"
-                        popup.open()
-                        return
-                    Active.client = Active.cl.c_list[x]
-                    break
-            except NoConnectivity:
-                popup = Popup(size_hint=(None, None), size=(300, 150))
-                popup.add_widget(Label(text="Unable to connect to host " + host))
-                popup.bind(on_press=popup.dismiss)
-                popup.title = "No connectivity"
-                popup.open()
-                return
         try:
+            netw.connect_to(Active.cl.c_list[idx])
+            netw.send_val(Active.cl.c_list[idx].token)
+            if netw.get_ack() != netw.SOCK_ACK:
+                raise BadCredentials("Connection rejected by " + Active.cl.c_list[idx].name)
+            netw.send_val(Active.cl.c_list[idx].password)
+            if netw.get_ack() != netw.SOCK_ACK:
+                raise BadCredentials("Connection rejected by " + Active.cl.c_list[idx].name)
+            netw.send_val(str(NET_CONNEC) + ":0")
+            netw.s.close()
+            Active.client = Active.cl.c_list[idx]
             Active.conf_task.get_config(Active.client)
+        except BadCredentials as bc:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text=bc.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Wrong Credentials"
+            popup.open()
+            return
+        except ConnectionError:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text="Unable to connect to host " + Active.cl.c_list[idx].name))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "Connection Error"
+            popup.open()
+            return
+        except NoConnectivity:
+            popup = Popup(size_hint=(None, None), size=(300, 150))
+            popup.add_widget(Label(text="Unable to connect to host " + Active.cl.c_list[idx].name))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = "No connectivity"
+            popup.open()
+            return
         except ConfigException as ce:
             popup = Popup(size_hint=(None, None), size=(400, 150))
             popup.add_widget(Label(text=ce.value))
@@ -252,7 +413,7 @@ class ManagerApp(App):
     # @param server The client name or IP
     # @param pw The Klearnel password
     # @param token The Klearnel token
-    def addsrv(self, server, pw, token):
+    def addsrv(self, server, ip, pw, token):
         if len(server) < 1:
             popup = Popup(size_hint=(None, None), size=(300, 150))
             popup.add_widget(Label(text="Client name must not be empty"))
@@ -272,9 +433,11 @@ class ManagerApp(App):
             popup.title = "Token Error"
             popup.open()
         else:
-            Active.cl.add_client(Active.cl, Client(token, server, pw))
+            Active.cl.add_client(Active.cl, Client(token, ip, server, pw))
             self.get_index('Chooser')
             self.load_screen(self.index)
+            global update
+            update = 1
 
     ## Sets indexing for screen navigation
     # @param idx The index

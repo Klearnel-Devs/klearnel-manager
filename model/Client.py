@@ -65,16 +65,24 @@ class Client:
     token = None
     ## The user inputted Klearnel password when Klearnel is launched for the first time
     password = None
-    ## The hostname or IP address
+    ## The hostname
     name = None
+    ## The IP address
+    ip = ''
 
     ## Constructor
-    def __init__(self, token, name, encrypt_pwd):
+    def __init__(self, token, ip, name, encrypt_pwd):
         from controller.Crypter import Crypter
         self.token = token
         self.name = name
+        self.ip = ip
         self.password = Crypter.encrypt(encrypt_pwd)
         self.user = Active.user
+
+    ## SETTER
+    def set_password(self, pw):
+        from controller.Crypter import Crypter
+        self.password = Crypter.encrypt(pw)
 
     ## String override
     def __str__(self):

@@ -89,7 +89,7 @@ class TaskScan(Tasker):
     def add_to_scan(self, client, new_elem):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(SCAN_ADD) + ":" + str(len(new_elem.path)))
             net.send_val(new_elem.path)
@@ -131,7 +131,7 @@ class TaskScan(Tasker):
     def mod_from_scan(self, client, path, options, tmp):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(SCAN_MOD) + ":" + str(len(path)))
             net.send_val(path)
@@ -161,7 +161,7 @@ class TaskScan(Tasker):
     def rm_from_scan(self, client, path):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(SCAN_RM) + ":" + str(len(path)))
             net.send_val(path)
@@ -190,7 +190,7 @@ class TaskScan(Tasker):
         net = Networker()
         scan_list = list()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(SCAN_LIST) + ":0")
             result = None
@@ -263,7 +263,7 @@ class TaskQR(Tasker):
     def add_to_qr(self, client, path):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_ADD) + ":" + str(len(path)))
             net.send_val(path)
@@ -290,7 +290,7 @@ class TaskQR(Tasker):
     def rm_from_qr(self, client, filename):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_RM) + ":" + str(len(filename)))
             net.send_val(filename)
@@ -317,7 +317,7 @@ class TaskQR(Tasker):
     def restore_from_qr(self, client, filename):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_REST) + ":" + str(len(filename)))
             net.send_val(filename)
@@ -346,7 +346,7 @@ class TaskQR(Tasker):
         net = Networker()
         qr_list = list()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_LIST) + ":0")
             result = None
@@ -412,7 +412,7 @@ class TaskQR(Tasker):
     def rm_all_from_qr(self, client):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_RM_ALL) + ":0")
         except ConnectionError:
@@ -437,7 +437,7 @@ class TaskQR(Tasker):
     def restore_all_from_qr(self, client):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(QR_REST_ALL) + ":0")
         except NoConnectivity:
@@ -464,7 +464,7 @@ class TaskConfig(Tasker):
     def get_config(self, client):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(CONF_LIST) + ":0")
 
@@ -570,7 +570,7 @@ class TaskConfig(Tasker):
     def send_conf_mod(self, client, section, key, new_value):
         net = Networker()
         try:
-            net.connect_to(client.name)
+            net.connect_to(client)
             self.send_credentials(net, client)
             if section is 'gbl':
                 section = 'global'

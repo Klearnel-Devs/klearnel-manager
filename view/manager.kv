@@ -8,8 +8,13 @@
 #            dash_offset: 5
 #            dash_length: 3
 
-<ListItems@ListItemButton>
-    on_press: app.connect(self.text)
+<StTextInput@TextInput>
+    multiline: False
+    write_tab: False
+
+<ConnectButton@Button>
+    on_press:
+        app.connect(int(self.id))
 
 <ActionSpinnerOptions@SpinnerOption>
     background_color: .4, .4, .4, 1

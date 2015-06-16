@@ -17,7 +17,7 @@ ManagerScreen:
                 Label:
                     size_hint_x: None
                     width: root.width/3
-                    text: 'Client Name'
+                    text: 'Hostname'
                 TextInput:
                     id: srv
                     size_hint_x: None
@@ -25,7 +25,18 @@ ManagerScreen:
                     multiline: False
                     write_tab: False
                     focus: True
-                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+                    on_text_validate: app.addsrv(srv.text, ip.text, pw.text, tk.text)
+                Label:
+                    size_hint_x: None
+                    width: root.width/3
+                    text: 'IP Address (optional)'
+                TextInput:
+                    id: ip
+                    size_hint_x: None
+                    width: root.width/2
+                    multiline: False
+                    write_tab: False
+                    on_text_validate: app.addsrv(srv.text, ip.text, pw.text, tk.text)
                 Label:
                     size_hint_x: None
                     width: root.width/3
@@ -37,7 +48,7 @@ ManagerScreen:
                     multiline: False
                     password: True
                     write_tab: False
-                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+                    on_text_validate: app.addsrv(srv.text, ip.text, pw.text, tk.text)
                 Label:
                     size_hint_x: None
                     width: root.width/3
@@ -49,7 +60,7 @@ ManagerScreen:
                     multiline: False
                     password: True
                     write_tab: False
-                    on_text_validate: app.addsrv(srv.text, pw.text, tk.text)
+                    on_text_validate: app.addsrv(srv.text, ip.text, pw.text, tk.text)
         AnchorLayout:
             anchor_x: 'center'
             BoxLayout:
@@ -74,6 +85,6 @@ ManagerScreen:
                     width: root.width/3
                     text: 'Add Server'
                     on_press:
-                        app.addsrv(srv.text, pw.text, tk.text)
+                        app.addsrv(srv.text, ip.text, pw.text, tk.text)
         Label:
             text: "Developed by Klearnel Devs"
