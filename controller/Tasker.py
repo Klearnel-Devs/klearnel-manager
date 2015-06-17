@@ -85,6 +85,7 @@ class TaskScan(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws ScanException
     def add_to_scan(self, client, new_elem):
         net = Networker()
@@ -129,6 +130,7 @@ class TaskScan(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws ScanException
     def mod_from_scan(self, client, path, options, tmp):
         net = Networker()
@@ -161,6 +163,7 @@ class TaskScan(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws ScanException
     def rm_from_scan(self, client, path):
         net = Networker()
@@ -190,6 +193,7 @@ class TaskScan(Tasker):
     # @exception ConnectionError
     # @exception NoConnectivity
     # @exception EmptyListException Raised if received list is empty
+    # @exception ValueError
     # @throws ScanException
     # @return scan_list The new scanner list from Klearnel
     def get_scan_list(self, client):
@@ -267,6 +271,7 @@ class TaskQR(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws QrException
     def add_to_qr(self, client, path):
         net = Networker()
@@ -296,6 +301,7 @@ class TaskQR(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws QrException
     def rm_from_qr(self, client, filename):
         net = Networker()
@@ -325,6 +331,7 @@ class TaskQR(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws QrException
     def restore_from_qr(self, client, filename):
         net = Networker()
@@ -354,6 +361,7 @@ class TaskQR(Tasker):
     # @exception ConnectionError
     # @exception NoConnectivity
     # @exception EmptyListException Raised if received list is empty
+    # @exception ValueError
     # @throws QrException
     # @return qr_list The new quarantine list
     def get_qr_list(self, client):
@@ -424,6 +432,7 @@ class TaskQR(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws QrException
     def rm_all_from_qr(self, client):
         net = Networker()
@@ -451,6 +460,7 @@ class TaskQR(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws QrException
     def restore_all_from_qr(self, client):
         net = Networker()
@@ -480,6 +490,7 @@ class TaskConfig(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws ConfigException
     def get_config(self, client):
         lineno()
@@ -590,6 +601,7 @@ class TaskConfig(Tasker):
     # @exception ConnectionRefusedError
     # @exception ConnectionError
     # @exception NoConnectivity
+    # @exception ValueError
     # @throws ConfigException
     def send_conf_mod(self, client, section, key, new_value):
         net = Networker()

@@ -45,9 +45,11 @@ class ManagerScreen(Screen):
 class StTextInput(TextInput):
     pass
 
+## See Kivy Files
 class ConnectButton(Button):
     pass
 
+## See Kivy Files
 class ClCompositeListItem(CompositeListItem):
     text = ''
 
