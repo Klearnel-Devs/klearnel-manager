@@ -120,7 +120,10 @@ class ClientDetailView(GridLayout):
         self.redraw()
 
     ## Triggered when modifying a client
-    # @param item The item to restore
+    # @param name The client hostname
+    # @param ip The client IP
+    # @param pw The client password
+    # @param token The Klearnel token
     # @param index The items index in the local list
     def modify_item(self, name, ip, pw, token, index):
         if Active.cl.c_list[index].name is not name:
@@ -152,9 +155,13 @@ class ClientDetailView(GridLayout):
         Active.cl.save_list(Active.cl)
         global update
         update = 1
+        popup = Popup(size_hint=(None, None), size=(400, 150))
+        popup.add_widget(Label(text="Client " + Active.cl.c_list[index].name + " successfully modified"))
+        popup.bind(on_press=popup.dismiss)
+        popup.title = "Modification Successful"
+        popup.open()
 
     ## Triggered when removing a client
-    # @param item The item to remove
     # @param index The items index in the local list
     # @exception QrException
     def delete_item(self, index):
@@ -412,7 +419,8 @@ class ManagerApp(App):
         self.load_screen(self.index)
 
     ## Validates and adds a client to client database
-    # @param server The client name or IP
+    # @param server The client (host)name
+    # @param ip The client IP address
     # @param pw The Klearnel password
     # @param token The Klearnel token
     def addsrv(self, server, ip, pw, token):
@@ -590,6 +598,44 @@ class ManagerApp(App):
         Active.changed['qr'] = 1
         self.get_index("Quarantine")
         self.load_screen(self.index)
+
+    ## Restores all items in Klearnel's Quarantine
+    # @exception QrException
+    def restore_all(self):
+        try:
+            Active.qr_task.restore_all_from_qr(Active.client)
+        except QrException as qe:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qe.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qe.title
+            popup.open()
+            return
+        Active.changed['qr'] = 1
+        popup = Popup(size_hint=(None, None), size=(400, 150))
+        popup.add_widget(Label(text="Restore successful, please wait while\n the interface refreshes"))
+        popup.bind(on_press=popup.dismiss)
+        popup.title = "Restore Successful"
+        popup.open()
+
+    ## Permanently deletes all items in Klearnel's Quarantine
+    # @exception QrException
+    def rm_all(self):
+        try:
+            Active.qr_task.rm_all_from_qr(Active.client)
+        except QrException as qe:
+            popup = Popup(size_hint=(None, None), size=(400, 150))
+            popup.add_widget(Label(text=qe.value))
+            popup.bind(on_press=popup.dismiss)
+            popup.title = qe.title
+            popup.open()
+            return
+        Active.changed['qr'] = 1
+        popup = Popup(size_hint=(None, None), size=(400, 150))
+        popup.add_widget(Label(text="Removal successful, please wait while\n the interface refreshes"))
+        popup.bind(on_press=popup.dismiss)
+        popup.title = "Remove Successful"
+        popup.open()
 
     ## Validates and modifies scanner item options
     # @param btn The selected button

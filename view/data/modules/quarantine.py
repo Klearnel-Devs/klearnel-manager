@@ -192,7 +192,7 @@ class QuarantineViewModal(BoxLayout):
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
         if Active.changed['qr'] != 0:
             Active.changed['qr'] = 0
-            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+            Clock.schedule_once(lambda dt: self.update_list(), 1)
 
     ## Updates the Quarantine list
     # @exception QrException
@@ -216,13 +216,14 @@ class QuarantineViewModal(BoxLayout):
                 popup.bind(on_press=popup.dismiss)
                 popup.title = ee.title
                 popup.open()
-        self.qrdata.clear()
-        for x in range(0, len(Active.qrList)):
+        finally:
+            self.qrdata.clear()
+            for x in range(0, len(Active.qrList)):
                 self.qrdata.append({'filename': Active.qrList[x].f_name,
                                   'old_path': Active.qrList[x].o_path})
-        self.list_adapter.data = self.qrdata
-        if hasattr(self.list_view, '_reset_spopulate'):
-            self.list_view._reset_spopulate()
+            self.list_adapter.data = self.qrdata
+            if hasattr(self.list_view, '_reset_spopulate'):
+                self.list_view._reset_spopulate()
 
     ## The args converter
     def formatter(self, rowindex, qr_data):

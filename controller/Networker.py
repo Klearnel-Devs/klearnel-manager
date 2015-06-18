@@ -21,7 +21,7 @@ class Networker:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     ## Method that initiations connection between Klearnel & Klearnel Manager
-    # @param host The host as an IP address or hostname
+    # @param client The host as an IP address or hostname
     # @param port The port on which to connect
     # @throws NoConnectivity
     def connect_to(self, client, port=42225):

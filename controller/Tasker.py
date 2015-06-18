@@ -261,7 +261,8 @@ class TaskScan(Tasker):
                 net.s.close()
             except socket.error:
                 pass
-        return scan_list
+            finally:
+                return scan_list
 
 ## Subclass of Tasker for Quarantine operations
 class TaskQR(Tasker):
@@ -420,8 +421,8 @@ class TaskQR(Tasker):
                 net.s.close()
             except socket.error:
                 pass
-
-        return qr_list
+            finally:
+                return qr_list
 
     ## NOT YET IMPLEMENTED
     def get_qr_info(self):
@@ -443,7 +444,7 @@ class TaskQR(Tasker):
         except ConnectionRefusedError:
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
-            raise Exception("Unable to remove all elements in the quarantine on " + client.name)
+            raise QrException("Unable to remove all elements in the quarantine on " + client.name)
         except NoConnectivity:
             raise QrException("Unable to connect to " + client.name)
         except ValueError:
@@ -473,7 +474,7 @@ class TaskQR(Tasker):
         except ConnectionRefusedError:
             raise QrException("Unable to authentify with " + client.name)
         except ConnectionError:
-            raise Exception("Unable to restore all elements from the quarantine on " + client.name)
+            raise QrException("Unable to restore all elements from the quarantine on " + client.name)
         except ValueError:
             raise QrException("Undetermined error when restoring\n all from Quarantine on " + client.name)
         finally:
@@ -493,20 +494,16 @@ class TaskConfig(Tasker):
     # @exception ValueError
     # @throws ConfigException
     def get_config(self, client):
-        lineno()
         net = Networker()
-        lineno()
         try:
             net.connect_to(client)
             self.send_credentials(net, client)
             net.send_val(str(CONF_LIST) + ":0")
-            lineno()
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
             Active.confList.gbl['log_age'] = int(result)
             net.send_ack(net.SOCK_ACK)
-            lineno()
             size = net.get_data(20)
             net.send_ack(net.SOCK_ACK)
             result = net.get_data(int(size))
