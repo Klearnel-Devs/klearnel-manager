@@ -1,5 +1,11 @@
-__author__ = 'Derek'
+## @package controller
+#   Handles communication between Klearnel & Klearnel Manager
+#
+# @author Antoine Ceyssens <a.ceyssens@nukama.be> & Derek Van Hove <d.vanhove@nukama.be>
 
+
+
+## Function to initialize variables required throughout the manager
 def init():
     global cl
     global user
@@ -12,7 +18,7 @@ def init():
     global tasker
     global conf_task
     global changed
-    changed = dict(sc=0, qr=0)
+    changed = dict(sc=0, qr=0, cl=0)
     cl = None
     client = None
     user = None

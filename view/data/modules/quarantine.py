@@ -1,4 +1,7 @@
-__author__ = 'Derek'
+## @package view
+#   Defines classes to be displayed by the GUI
+#
+# @author Antoine Ceyssens <a.ceyssens@nukama.be> & Derek Van Hove <d.vanhove@nukama.be>
 from kivy.app import App
 from os.path import *
 from kivy.lang import Builder
@@ -22,16 +25,22 @@ from view.data.modules.scanner import *
 from view.data.modules.quarantine import *
 from model.Exceptions import QrException
 
+## Variable used to determine whether to schedule refresh event
 update = 0
+## Variable used to avoid multiple instances of warning whether list is empty
 empty = 0
 
+## Extends CompositeListItem to add text attribute
 class QrCompositeListItem(CompositeListItem):
     text = ''
 
+## The view of an individual quarantine item
 class QrDetailView(GridLayout):
+    ## Quarantine items name
     qr_name = StringProperty('', allownone=True)
     obj = None
 
+    ## Constructor
     def __init__(self, **kwargs):
         kwargs['cols'] = 1
         self.qr_name = kwargs.get('qr_name', '')
@@ -40,6 +49,7 @@ class QrDetailView(GridLayout):
         if self.qr_name:
             self.redraw()
 
+    ## Redraws the detail view
     def redraw(self, *args):
         self.clear_widgets()
         if self.qr_name:
@@ -67,6 +77,9 @@ class QrDetailView(GridLayout):
                     self.add_widget(box4)
                     break
 
+    ## Determines whether to redraw if selection has changed
+    # @param list_adapter
+    # @param args
     def qr_changed(self, list_adapter, *args):
         if len(list_adapter.selection) == 0:
             self.qr_name = None
@@ -79,6 +92,10 @@ class QrDetailView(GridLayout):
                 self.qr_name = selected_object.text
         self.redraw()
 
+    ## Triggered when restoring an item from Klearnel's Quarantine
+    # @param item The item to restore
+    # @param index The items index in the local list
+    # @exception QrException
     def restoreItem(self, item, index):
         try:
             Active.qr_task.restore_from_qr(Active.client, item.f_name)
@@ -93,6 +110,10 @@ class QrDetailView(GridLayout):
         global update
         update = 1
 
+    ## Triggered when removing an item from Klearnel's Quarantine
+    # @param item The item to remove
+    # @param index The items index in the local list
+    # @exception QrException
     def deleteItem(self, item, index):
         try:
             Active.qr_task.rm_from_qr(Active.client, item.f_name)
@@ -107,9 +128,12 @@ class QrDetailView(GridLayout):
         global update
         update = 1
 
+## Class containing all necessary components for creating a dynamic list view
 class QuarantineViewModal(BoxLayout):
-    data = ListProperty()
 
+    ## Constructon
+    # @exception QrException
+    # @exception EmptyListException
     def __init__(self, **kwargs):
         self.qrdata = list()
         # FOR NETWORK
@@ -156,9 +180,11 @@ class QuarantineViewModal(BoxLayout):
         Clock.schedule_interval(self.callback, 60)
         Clock.schedule_interval(self.callback2, 5)
 
+    ## Callback on clock schedule to update list
     def callback(self, dt):
         self.update_list()
 
+    ## Callback on clock schedule to update list
     def callback2(self, dt):
         global update
         if update != 0:
@@ -166,8 +192,11 @@ class QuarantineViewModal(BoxLayout):
             Clock.schedule_once(lambda dt: self.update_list(), 0.1)
         if Active.changed['qr'] != 0:
             Active.changed['qr'] = 0
-            Clock.schedule_once(lambda dt: self.update_list(), 0.1)
+            Clock.schedule_once(lambda dt: self.update_list(), 1)
 
+    ## Updates the Quarantine list
+    # @exception QrException
+    # @exception EmptyListException
     def update_list(self):
         try:
             Active.qrList = Active.qr_task.get_qr_list(Active.client)
@@ -187,14 +216,16 @@ class QuarantineViewModal(BoxLayout):
                 popup.bind(on_press=popup.dismiss)
                 popup.title = ee.title
                 popup.open()
-        self.qrdata.clear()
-        for x in range(0, len(Active.qrList)):
+        finally:
+            self.qrdata.clear()
+            for x in range(0, len(Active.qrList)):
                 self.qrdata.append({'filename': Active.qrList[x].f_name,
                                   'old_path': Active.qrList[x].o_path})
-        self.list_adapter.data = self.qrdata
-        if hasattr(self.list_view, '_reset_spopulate'):
-            self.list_view._reset_spopulate()
+            self.list_adapter.data = self.qrdata
+            if hasattr(self.list_view, '_reset_spopulate'):
+                self.list_view._reset_spopulate()
 
+    ## The args converter
     def formatter(self, rowindex, qr_data):
         return {'text': qr_data['filename'],
                 'size_hint_y': None,

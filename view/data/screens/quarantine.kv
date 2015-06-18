@@ -9,9 +9,9 @@ ManagerScreen:
             ActionView:
                 id: av
                 ActionPrevious:
-                    text: "Logout"
+                    text: "Quit"
                     on_press:
-                        app.logout()
+                        app.quit()
                 ActionSpinner:
                     id: spnr
                     important: True
@@ -38,10 +38,26 @@ ManagerScreen:
                 size: (1.0, 1.0)
 
 
-        Button:
-            text: 'Add File to Quarantine'
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y: None
-            size: (root.width, root.height/20)
-            on_press:
-                app.get_index('addquar')
-                app.load_screen(app.index)
+            height: 30
+            Button:
+                text: 'Add File to Quarantine'
+                size_hint_y: None
+                size: (root.width, root.height/20)
+                on_press:
+                    app.get_index('addquar')
+                    app.load_screen(app.index)
+            Button:
+                text: 'Restore All'
+                size_hint_y: None
+                size: (root.width, root.height/20)
+                on_press:
+                    app.restore_all()
+            Button:
+                text: 'Delete All'
+                size_hint_y: None
+                size: (root.width, root.height/20)
+                on_press:
+                    app.rm_all()

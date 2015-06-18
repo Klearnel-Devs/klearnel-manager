@@ -8,24 +8,13 @@
 #            dash_offset: 5
 #            dash_length: 3
 
-<ScButton@ListItemButton>
-    size_hint: None, 1.0
-    font_size: 12
-    size: self.texture_size
-    background_disabled_down: 'atlas://data/images/defaulttheme/button_pressed'
-    disabled: True
-    disabled_color: (1,1,1,1)
+<StTextInput@TextInput>
+    multiline: False
+    write_tab: False
 
-<ScLabel@Label>
-    size_hint: None, 1.0
-    font_size: 12
-    size: self.texture_size
-
-<QuarantineItem@ListItemButton>
-<ScannerItem@ListItemButton>
-
-<ListItems@ListItemButton>
-    on_press: app.connect(self.text)
+<ConnectButton@Button>
+    on_press:
+        app.connect(int(self.id))
 
 <ActionSpinnerOptions@SpinnerOption>
     background_color: .4, .4, .4, 1
